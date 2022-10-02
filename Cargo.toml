@@ -1,9 +1,15 @@
 [package]
-name = "docstrify"
-version = "0.1.0"
+name = "STKLR"
+version = "0.0.1"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["alphastrata <alphastrata@gmail.com>"]
+license = "MIT"
+description = "STKLR, pronounced 'stickler' is a cli tool to automatically link functions, enums, structs, traits etc in rust-doc docstrings."
+homepage = "https://github.com/alphastrata"
+repository = "https://github.com/alphastrata/stklr.git"
+readme = "README.md"
+keywords = ["docs"]
+publish = false
 
 [dependencies]
 anyhow = "1.0.65"
