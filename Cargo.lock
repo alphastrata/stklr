@@ -3,6 +3,20 @@
 version = 3
 
 [[package]]
+name = "STKLR"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "crossbeam",
+ "lazy_static",
+ "rayon",
+ "regex",
+ "ripgrep",
+ "termcolor",
+ "thiserror",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -152,20 +166,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edbafec5fa1f196ca66527c1b12c2ec4745ca14b50f1ad8f9f6f720b55d11fac"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "docstrify"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "crossbeam",
- "lazy_static",
- "rayon",
- "regex",
- "ripgrep",
- "termcolor",
- "thiserror",
 ]
 
 [[package]]

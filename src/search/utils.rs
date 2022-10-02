@@ -139,7 +139,7 @@ impl SourceCode {
         sc
     }
     /// Imposes docstring linking changes on any and all idents that're contained within self.
-    fn prepare_lines(&mut self, preview: bool) {
+    fn preview_changes(&mut self) {
         _ = self
             .named_idents
             .iter()
@@ -156,11 +156,10 @@ impl SourceCode {
                                 let needle = &format!("[`{}`]", i);
                                 lm.contents_modified =
                                     Some(lm.contents_original.replace(i, needle));
-                                if preview {
-                                    println!("PREVIEW CHANGE FOR: Line Number::{}", lm.line_num);
-                                    println!("{}", &lm.contents_original);
-                                    println!("{}\n", lm.contents_modified.clone().unwrap());
-                                }
+                                //TODO: move this out into a feedback.rs module
+                                println!("PREVIEW CHANGE FOR: Line Number::{}", lm.line_num);
+                                println!("{}", &lm.contents_original);
+                                println!("{}\n", lm.contents_modified.clone().unwrap());
                             }
                             lm.all_linked = Linked::Complete;
                         }
@@ -170,16 +169,48 @@ impl SourceCode {
             })
             .collect::<()>();
     }
-    /// Preview the pending changes, line-by-line
-    fn preview(&mut self) {
-        let t1 = std::time::Instant::now();
-        self.prepare_lines(true);
-        dbg!(t1.elapsed().as_nanos());
-    }
-
     /// Execute the changes by mem-swapping the contents_original with the contents_modified and
-    fn execute(&mut self) {
-        self.prepare_lines(true);
+    fn execute(&mut self) -> HashMap<usize, String> {
+        let mut write_buf = HashMap::new();
+        let (tx, rx) = mpsc::channel();
+
+        _ = self
+            .named_idents
+            .iter()
+            .map(|i| {
+                _ = self
+                    .m
+                    .iter()
+                    .map(|(_, lm)| {
+                        let tx_c = tx.clone();
+                        match lm.flavour {
+                            Flavour::Docstring => {
+                                //BUG: this will actually fail when we have say [`Ident`] and Ident in the same line.
+                                if lm.contents_original.contains(i)
+                                    && !lm.contents_original.contains(&format!("`{}`", i))
+                                {
+                                    let needle = &format!("[`{}`]", i);
+                                    if let Err(e) = tx_c.send((
+                                        lm.line_num,
+                                        lm.contents_original.replace(i, needle).clone(),
+                                    )) {
+                                        eprintln!("Failure to send:{}", e);
+                                    }
+                                }
+                            }
+                            _ => {}
+                        }
+                    })
+                    .collect::<()>();
+            })
+            .collect::<()>();
+
+        drop(tx);
+        while let Ok((e, lm)) = rx.recv() {
+            dbg!(&lm);
+            write_buf.insert(e, lm);
+        }
+        write_buf
     }
     /// Writes the contents_modified field of all LineMatches to their original source files.
     fn write(&self) {
@@ -272,7 +303,9 @@ mod tests {
     #[test]
     fn read_lines_of_source() {
         let mut sc = SourceCode::new_from_file("src/search/utils.rs");
-        sc.preview();
+        //let mut sc = SourceCode::new_from_file("src/main.rs");
+        //sc.preview_changes();
+        sc.execute();
     }
 
     // #[test]
