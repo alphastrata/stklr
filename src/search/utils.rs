@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 use super::consts::*;
 
+use glob::glob;
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
@@ -50,8 +51,107 @@ where
 
 #[derive(Default, Debug, Clone)]
 pub struct CodeBase {
-    source_files: Vec<RawSourceCode>,
-    idents: HashMap<String, String>,
+    pub source_files: Vec<RawSourceCode>,
+    pub named_idents: Vec<String>,
+}
+
+impl CodeBase {
+    /// Populates the idents we care about...
+    fn populate_idents(mut self) -> Self {
+        self.source_files.iter().for_each(|sf| {
+            sf.named_idents
+                .iter()
+                .for_each(|e| self.named_idents.push(e.to_string()));
+        });
+        self
+    }
+    /// Creates a new CodeBase from the glob searching the current working directory the app is run
+    /// in.
+    fn new_from_cwd() -> Self {
+        CodeBase {
+            source_files: {
+                glob("./**/*.rs")
+                    .unwrap()
+                    .filter_map(Result::ok)
+                    .map(|p| RawSourceCode::new_from_file(&p))
+                    .collect::<Vec<RawSourceCode>>()
+            },
+            named_idents: Vec::new(),
+        }
+        .populate_idents()
+    }
+    /// makes adjustments to RawLines from within RawSourceCode's RawLines
+    fn make_adjustments(&self, tx: Sender<(usize, String)>) {
+        let tx_c = tx.clone();
+        self.source_files.iter().for_each(|sf| {
+            sf.named_idents.iter().for_each(|i| {
+                sf.m.iter()
+                    .for_each(|(_, raw_line)| match raw_line.flavour {
+                        Flavour::Docstring => {
+                            //BUG: haven't accounted for multiple occurences, or a nested
+                            //occurence.
+                            if raw_line.contents_original.contains(i)
+                                && !raw_line.contents_original.contains(&format!("`{}`", i))
+                            {
+                                let needle = &format!("[`{}`]", i);
+                                if let Err(e) = tx_c.send((
+                                    raw_line.line_num,
+                                    raw_line.contents_original.replace(i, needle).clone(),
+                                )) {
+                                    eprintln!("Failure to send:{}", e);
+                                }
+                            }
+                        }
+                        _ => {}
+                    })
+            });
+        })
+    }
+    pub fn write(self) {
+        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
+
+        let tsrsc = self.clone();
+
+        let (tx, rx) = mpsc::channel();
+
+        let tx_c = tx.clone();
+        let txer = thread::spawn(move || tsrsc.make_adjustments(tx_c));
+
+        let wb_c = write_buf.clone();
+        let rxer = thread::spawn(move || {
+            while let Ok((e, ml)) = rx.recv() {
+                wb_c.lock().unwrap().insert(e, ml);
+            }
+        });
+        if let Ok(_) = txer.join() {
+            drop(tx);
+        }
+        rxer.join().expect("unexpected threat failure.");
+
+        let mut output = String::new();
+        let write_buf_complete = write_buf.lock().unwrap();
+
+        let total_lines = self.source_files.iter().map(|sf| sf.total_lines).sum();
+        for sf in self.source_files.iter() {
+            (0..total_lines).into_iter().for_each(|i| {
+                if let Some(m) = write_buf_complete.get(&i) {
+                    dbg!(&m);
+                    output.push_str(&format!("{}\n", m))
+                } else {
+                    output.push_str(&format!("{}\n", sf.get(&i).unwrap().contents_original))
+                }
+            });
+        }
+
+        // Assuming the buffers are ordered at this stage...
+        eprintln!("{}", "-".repeat(80));
+        output.split('\n').for_each(|l| println!("{}", l));
+        eprintln!("{}", "-".repeat(80));
+
+        _ = std::fs::File::create("output.rs").unwrap();
+
+        std::fs::write("output.rs", output).unwrap();
+    }
 }
 
 #[derive(Default, Debug, Clone)]
@@ -146,79 +246,6 @@ impl RawSourceCode {
             })
         });
     }
-
-    /// Generates modified lines and sends them to a buffer for writing.
-    fn generate_output(&self, tx: Sender<(usize, String)>) {
-        let tx_c = tx.clone();
-        self.named_idents.iter().for_each(|i| {
-            self.m
-                .iter()
-                .for_each(|(_, raw_line)| match raw_line.flavour {
-                    Flavour::Docstring => {
-                        //BUG: haven't accounted for multiple occurences, or a nested
-                        //occurence.
-                        if raw_line.contents_original.contains(i)
-                            && !raw_line.contents_original.contains(&format!("`{}`", i))
-                        {
-                            let needle = &format!("[`{}`]", i);
-                            if let Err(e) = tx_c.send((
-                                raw_line.line_num,
-                                raw_line.contents_original.replace(i, needle).clone(),
-                            )) {
-                                eprintln!("Failure to send:{}", e);
-                            }
-                        }
-                    }
-                    _ => {}
-                })
-        });
-    }
-    pub fn write(self) {
-        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
-
-        let tsrsc = self.clone();
-
-        let (tx, rx) = mpsc::channel();
-
-        let tx_c = tx.clone();
-        let txer = thread::spawn(move || tsrsc.generate_output(tx_c));
-
-        let wb_c = write_buf.clone();
-        let rxer = thread::spawn(move || {
-            while let Ok((e, ml)) = rx.recv() {
-                wb_c.lock().unwrap().insert(e, ml);
-            }
-        });
-        if let Ok(_) = txer.join() {
-            drop(tx);
-        }
-        rxer.join().expect("unexpected threat failure.");
-
-        let mut output = String::new();
-        let write_buf_complete = write_buf.lock().unwrap();
-
-        (0..self.total_lines).into_iter().for_each(|i| {
-            if let Some(m) = write_buf_complete.get(&i) {
-                dbg!(&m);
-                output.push_str(&format!("{}\n", m))
-            } else {
-                output.push_str(&format!("{}\n", self.get(&i).unwrap().contents_original))
-            }
-        });
-
-        // Assuming the buffers are ordered at this stage...
-        eprintln!("{}", "-".repeat(80));
-        output.split('\n').for_each(|l| println!("{}", l));
-        eprintln!("{}", "-".repeat(80));
-
-        _ = std::fs::File::create("output.rs").unwrap();
-
-        std::fs::write("output.rs", output).unwrap();
-    }
-
-    // fn peek_context(&self, pivot_point: usize) -> Vec<RawLine> {
-    //     todo!()
-    // }
 }
 
 impl RawLine {
@@ -264,8 +291,7 @@ mod tests {
 
     #[test]
     fn read_sourcecode() {
-        let sc = RawSourceCode::new_from_file("src/main.rs");
-        dbg!(sc);
+        _ = RawSourceCode::new_from_file("src/main.rs");
     }
 
     #[test]
@@ -275,19 +301,74 @@ mod tests {
     }
     #[test]
     fn write_to_main() {
-        for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
-            let p = path;
-            let rsc = RawSourceCode::new_from_file(&p);
-            dbg!(&rsc.named_idents);
-            rsc.write()
+        let cb: CodeBase = CodeBase {
+            source_files: {
+                glob("./**/*.rs")
+                    .unwrap()
+                    .filter_map(Result::ok)
+                    .map(|p| RawSourceCode::new_from_file(&p))
+                    .collect::<Vec<RawSourceCode>>()
+            },
+            named_idents: Vec::new(),
+        };
+
+        dbg!(&cb.named_idents);
+
+        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
+        let wb_c = write_buf.clone();
+        let tsrsc = cb.clone();
+
+        let (tx, rx) = mpsc::channel();
+        let tx_c = tx.clone();
+
+        let txer = thread::spawn(move || tsrsc.make_adjustments(tx_c));
+
+        let rxer = thread::spawn(move || {
+            while let Ok((e, ml)) = rx.recv() {
+                wb_c.lock().unwrap().insert(e, ml);
+            }
+        });
+
+        if let Ok(_) = txer.join() {
+            drop(tx);
         }
+        rxer.join().expect("unexpected threat failure.");
+
+        // We'll write this...
+        let mut output = String::new();
+
+        let write_buf_complete = write_buf.lock().unwrap();
+
+        let total_lines = cb.source_files.iter().map(|sf| sf.total_lines).sum();
+        for sf in cb.source_files.iter() {
+            (0..total_lines).into_iter().for_each(|i| {
+                if let Some(m) = write_buf_complete.get(&i) {
+                    output.push_str(&format!("{}\n", m))
+                } else {
+                    if let Some(co) = sf.get(&i) {
+                        output.push_str(&format!("{}\n", co.contents_original))
+                    }
+                }
+            });
+        }
+
+        // Assuming the buffers are ordered at this stage...
+        eprintln!("{}", "-".repeat(80));
+        output.split('\n').for_each(|l| println!("{}", l));
+        eprintln!("{}", "-".repeat(80));
+
+        // _ = std::fs::File::create("output.rs").unwrap();
+        //
+        // std::fs::write("output.rs", output).unwrap();
     }
     #[test]
     fn show_matched_idents() {
         for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
             let p = path;
             let rsc = RawSourceCode::new_from_file(&p);
-            dbg!(rsc.named_idents);
+            if !rsc.named_idents.is_empty() {
+                dbg!(rsc.named_idents);
+            }
         }
     }
 }

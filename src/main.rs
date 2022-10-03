@@ -9,13 +9,7 @@ struct UnDocumented {}
 
 // our program begins here
 fn main() -> Result<()> {
-    for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
-        let p = path;
-        //let mut rsc = RawSourceCode::new_from_file(&p);
-        let mut rsc = RawSourceCode::new_from_file("src/main.rs");
-        //rsc.preview_changes();
-        rsc.write();
-    }
 
     Ok(())
 }
+
