@@ -65,7 +65,7 @@ impl CodeBase {
         });
         self
     }
-    /// Creates a new CodeBase from the glob searching the current working directory the app is run
+    /// Creates a new [`CodeBase`] from the glob searching the current working directory the app is run
     /// in.
     fn new_from_cwd() -> Self {
         CodeBase {
@@ -80,7 +80,7 @@ impl CodeBase {
         }
         .populate_idents()
     }
-    /// makes adjustments to RawLines from within RawSourceCode's RawLines
+    /// makes adjustments to RawLines from within [`RawSourceCode`]'s RawLines
     fn make_adjustments(&self, tx: Sender<(usize, String)>) {
         let tx_c = tx.clone();
         self.source_files.iter().for_each(|sf| {
@@ -256,7 +256,7 @@ impl RawLine {
         generate_ident_find_loops!(RUST_FN, RUST_TY, RUST_ENUM, RUST_STRUCT, RUST_TRAIT);
     }
 
-    /// Process preview_changes RawSourceCode [`find_docs`]
+    /// Process preview_changes [`RawSourceCode`] [`find_docs`]
     fn find_docs(&mut self) {
         let text = self.contents_original.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
