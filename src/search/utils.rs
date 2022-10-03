@@ -12,6 +12,9 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
 use std::fs::File;
+use std::fs::OpenOptions;
+use std::io::BufWriter;
+use std::io::Write;
 use std::io::{self, BufRead};
 use std::ops::Deref;
 use std::ops::DerefMut;
@@ -23,7 +26,7 @@ use std::thread::JoinHandle;
 
 /// Representing the levels of 'Completeness' a line's docstrings may be in.
 #[derive(Debug, Clone)]
-enum Linked {
+pub enum Linked {
     Complete,
     /// Ready to write out to stdout or the file actual
     Loaded,
@@ -37,20 +40,20 @@ enum Linked {
 /// Indicating whether the keyword, regex match we're dealing with is for docs, or the declaration
 /// of something we need to know about.
 #[derive(Debug, Clone)]
-enum Flavour {
+pub enum Flavour {
     Docstring,
     Declare,
     Tasteless,
 }
 /// All the information you could possibly need to do this app's job.
 #[derive(Debug, Clone)]
-struct LineMatch {
-    all_linked: Linked,
-    contents_modified: Option<String>,
-    contents_original: String,
-    flavour: Flavour,
-    hits: Vec<String>, //NOTE: expended data (exists temporarily to populate the SourceCode struct(s))
-    line_num: usize,   //NOTE: indentionally duplicate data
+pub struct LineMatch {
+    pub all_linked: Linked,
+    pub contents_modified: Option<String>,
+    pub contents_original: String,
+    pub flavour: Flavour,
+    pub hits: Vec<String>, //NOTE: expended data (exists temporarily to populate the SourceCode struct(s))
+    pub line_num: usize,   //NOTE: indentionally duplicate data
 }
 
 /// Helper to read the lines of a file and give you back an easy-iterable (from the cookbook).
@@ -64,20 +67,20 @@ where
 
 /// A collection of source files, with their $idents.
 #[derive(Default, Debug, Clone)]
-struct CodeBase {
+pub struct CodeBase {
     source_files: Vec<SourceCode>,
     idents: HashMap<String, String>,
 }
 
 /// In-memory representation of a rust-code source file.
 #[derive(Default, Debug, Clone)]
-struct SourceCode {
-    m: HashMap<usize, LineMatch>,
-    file: PathBuf,
-    ident_locs: Vec<usize>,
-    doc_locs: Vec<usize>,
-    total_lines: usize,
-    named_idents: Vec<String>,
+pub struct SourceCode {
+    pub m: HashMap<usize, LineMatch>,
+    pub file: PathBuf,
+    pub ident_locs: Vec<usize>,
+    pub doc_locs: Vec<usize>,
+    pub total_lines: usize,
+    pub named_idents: Vec<String>,
 }
 
 impl Deref for SourceCode {
@@ -96,7 +99,7 @@ impl SourceCode {
     /// Create a new `SourceCode` from a given file, holding all lines of said file as `String`s.
     /// Deref is implemented so that you can treat the internal `HashMap` that backs the struct, as
     /// what-it-is.
-    fn new_from_file<P>(file: P) -> Self
+    pub fn new_from_file<P>(file: P) -> Self
     where
         PathBuf: From<P>,
         P: AsRef<Path> + Copy,
@@ -139,7 +142,8 @@ impl SourceCode {
         sc
     }
     /// Imposes docstring linking changes on any and all idents that're contained within self.
-    fn preview_changes(&mut self) {
+    pub fn preview_changes(&mut self) {
+        let filepath = self.file.clone();
         _ = self
             .named_idents
             .iter()
@@ -157,7 +161,9 @@ impl SourceCode {
                                 lm.contents_modified =
                                     Some(lm.contents_original.replace(i, needle));
                                 //TODO: move this out into a feedback.rs module
-                                println!("PREVIEW CHANGE FOR: Line Number::{}", lm.line_num);
+
+                                println!("PREVIEW CHANGE FOR:");
+                                println!("{}::{}", filepath.display(), lm.line_num);
                                 println!("{}", &lm.contents_original);
                                 println!("{}\n", lm.contents_modified.clone().unwrap());
                             }
@@ -170,7 +176,7 @@ impl SourceCode {
             .collect::<()>();
     }
     /// Execute the changes by mem-swapping the contents_original with the contents_modified and
-    fn execute(&mut self) -> HashMap<usize, String> {
+    pub fn execute(&mut self) {
         let mut write_buf = HashMap::new();
         let (tx, rx) = mpsc::channel();
 
@@ -210,11 +216,25 @@ impl SourceCode {
             dbg!(&lm);
             write_buf.insert(e, lm);
         }
-        write_buf
+
+        self.write(write_buf)
     }
     /// Writes the contents_modified field of all LineMatches to their original source files.
-    fn write(&self) {
-        todo!()
+    fn write(&self, write_buf: HashMap<usize, String>) {
+        let mut output = String::new();
+
+        _ = (0..self.total_lines)
+            .into_iter()
+            .map(|i| {
+                if let Some(m) = write_buf.get(&i) {
+                    output.push_str(&format!("{}\n", m))
+                } else {
+                    output.push_str(&format!("{}\n", self.get(&i).unwrap().contents_original))
+                }
+            })
+            .collect::<Vec<()>>();
+
+        std::fs::write(&self.file, output).unwrap();
     }
 }
 
@@ -240,41 +260,6 @@ impl LineMatch {
             };
         }
         generate_ident_find_loops!(RUST_FN, RUST_TY, RUST_ENUM, RUST_STRUCT, RUST_TRAIT);
-        // for caps in RUST_FN.captures_iter(&text) {
-        //     if let Some(v) = caps.name("ident") {
-        //         let cap = v.as_str().to_string();
-        //         self.flavour = Flavour::Declare;
-        //         self.hits.push(cap);
-        //     }
-        // }
-        // for caps in RUST_ENUM.captures_iter(&text) {
-        //     if let Some(v) = caps.name("ident") {
-        //         let cap = v.as_str().to_string();
-        //         self.flavour = Flavour::Declare;
-        //         self.hits.push(cap);
-        //     }
-        // }
-        // for caps in RUST_STRUCT.captures_iter(&text) {
-        //     if let Some(v) = caps.name("ident") {
-        //         let cap = v.as_str().to_string();
-        //         self.flavour = Flavour::Declare;
-        //         self.hits.push(cap);
-        //     }
-        // }
-        // for caps in RUST_TRAIT.captures_iter(&text) {
-        //     if let Some(v) = caps.name("ident") {
-        //         let cap = v.as_str().to_string();
-        //         self.flavour = Flavour::Declare;
-        //         self.hits.push(cap);
-        //     }
-        // }
-        // for caps in RUST_TY.captures_iter(&text) {
-        //     if let Some(v) = caps.name("ident") {
-        //         let cap = v.as_str().to_string();
-        //         self.flavour = Flavour::Declare;
-        //         self.hits.push(cap);
-        //     }
-        // }
     }
 
     /// marks `Self` as having, or not having a `///` docstring at the beginning of the line.

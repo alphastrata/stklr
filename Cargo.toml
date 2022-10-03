@@ -14,6 +14,7 @@ publish = false
 [dependencies]
 anyhow = "1.0.65"
 crossbeam = "0.8.2"
+glob = "0.3.0"
 lazy_static = "1.4.0"
 rayon = "1.5.3"
 regex = "1.6.0"

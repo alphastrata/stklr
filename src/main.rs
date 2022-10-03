@@ -1,18 +1,22 @@
-trait BeanCounter {} // WARN: NO DOCS
+use anyhow::Result;
+use glob::glob;
 
-type Deaf = String; //WARN: NO DOCS
+use STKLR::search::utils::CodeBase;
+use STKLR::search::utils::SourceCode;
 
-/// A warm welcome, but not useful if you call it on Deaf. //WARN: unlinked ident.
-struct Hi {
-    h: String,
-}
+/// doesn't relate at all to CodeBase
+struct UnDocumented {}
 
-/// Much more useful than [`Hi`] //INFO: NO PROBLEM
-enum Hello {
-    One,
-    Two,
-}
 // our program begins here
-fn main() {
-    println!("Hello, world!");
+fn main() -> Result<()> {
+    for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
+        let p = path;
+        let mut sc = SourceCode::new_from_file(&p);
+        //let mut sc = SourceCode::new_from_file("src/main.rs");
+        //sc.preview_changes();
+        sc.preview_changes();
+        //sc.execute();
+    }
+
+    Ok(())
 }
