@@ -107,6 +107,7 @@ impl CodeBase {
             });
         })
     }
+
     pub fn write(self) {
         let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
 
@@ -135,10 +136,11 @@ impl CodeBase {
         for sf in self.source_files.iter() {
             (0..total_lines).into_iter().for_each(|i| {
                 if let Some(m) = write_buf_complete.get(&i) {
-                    dbg!(&m);
                     output.push_str(&format!("{}\n", m))
                 } else {
-                    output.push_str(&format!("{}\n", sf.get(&i).unwrap().contents_original))
+                    if let Some(sf) = sf.get(&i) {
+                        output.push_str(&format!("{}\n", sf.contents_original))
+                    }
                 }
             });
         }
@@ -148,9 +150,9 @@ impl CodeBase {
         output.split('\n').for_each(|l| println!("{}", l));
         eprintln!("{}", "-".repeat(80));
 
-        _ = std::fs::File::create("output.rs").unwrap();
+        //_ = std::fs::File::create("output.rs").unwrap();
 
-        std::fs::write("output.rs", output).unwrap();
+        //std::fs::write("output.rs", output).unwrap();
     }
 }
 
@@ -270,6 +272,7 @@ impl RawLine {
         generate_ident_find_loops!(RUST_FN, RUST_TY, RUST_ENUM, RUST_STRUCT, RUST_TRAIT);
     }
 
+    /// Process preview_changes RawSourceCode [`find_docs`]
     fn find_docs(&mut self) {
         let text = self.contents_original.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
@@ -303,7 +306,7 @@ mod tests {
     fn write_to_main() {
         let cb: CodeBase = CodeBase {
             source_files: {
-                glob("./**/*.rs")
+                glob("src/**/*.rs")
                     .unwrap()
                     .filter_map(Result::ok)
                     .map(|p| RawSourceCode::new_from_file(&p))
@@ -311,55 +314,7 @@ mod tests {
             },
             named_idents: Vec::new(),
         };
-
-        dbg!(&cb.named_idents);
-
-        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
-        let wb_c = write_buf.clone();
-        let tsrsc = cb.clone();
-
-        let (tx, rx) = mpsc::channel();
-        let tx_c = tx.clone();
-
-        let txer = thread::spawn(move || tsrsc.make_adjustments(tx_c));
-
-        let rxer = thread::spawn(move || {
-            while let Ok((e, ml)) = rx.recv() {
-                wb_c.lock().unwrap().insert(e, ml);
-            }
-        });
-
-        if let Ok(_) = txer.join() {
-            drop(tx);
-        }
-        rxer.join().expect("unexpected threat failure.");
-
-        // We'll write this...
-        let mut output = String::new();
-
-        let write_buf_complete = write_buf.lock().unwrap();
-
-        let total_lines = cb.source_files.iter().map(|sf| sf.total_lines).sum();
-        for sf in cb.source_files.iter() {
-            (0..total_lines).into_iter().for_each(|i| {
-                if let Some(m) = write_buf_complete.get(&i) {
-                    output.push_str(&format!("{}\n", m))
-                } else {
-                    if let Some(co) = sf.get(&i) {
-                        output.push_str(&format!("{}\n", co.contents_original))
-                    }
-                }
-            });
-        }
-
-        // Assuming the buffers are ordered at this stage...
-        eprintln!("{}", "-".repeat(80));
-        output.split('\n').for_each(|l| println!("{}", l));
-        eprintln!("{}", "-".repeat(80));
-
-        // _ = std::fs::File::create("output.rs").unwrap();
-        //
-        // std::fs::write("output.rs", output).unwrap();
+        cb.write();
     }
     #[test]
     fn show_matched_idents() {

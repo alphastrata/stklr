@@ -9,7 +9,6 @@ struct UnDocumented {}
 
 // our program begins here
 fn main() -> Result<()> {
-
     Ok(())
 }
 
