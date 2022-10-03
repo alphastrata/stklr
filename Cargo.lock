@@ -10,9 +10,11 @@ dependencies = [
  "crossbeam",
  "glob",
  "lazy_static",
+ "quote",
  "rayon",
  "regex",
  "ripgrep",
+ "syn",
  "termcolor",
  "thiserror",
 ]

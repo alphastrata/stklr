@@ -24,30 +24,22 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 
-/// Representing the levels of 'Completeness' a line's docstrings may be in.
 #[derive(Debug, Clone)]
 pub enum Linked {
     Complete,
-    /// Ready to write out to stdout or the file actual
     Loaded,
-    /// Some linking opportunities are not being acted upon
     Partial,
-    /// No linking opportunities are present
     Irrelevant,
     Unprocessed,
 }
-
-/// Indicating whether the keyword, regex match we're dealing with is for docs, or the declaration
-/// of something we need to know about.
 #[derive(Debug, Clone)]
 pub enum Flavour {
     Docstring,
     Declare,
     Tasteless,
 }
-/// All the information you could possibly need to do this app's job.
 #[derive(Debug, Clone)]
-pub struct LineMatch {
+pub struct RawLine {
     pub all_linked: Linked,
     pub contents_modified: Option<String>,
     pub contents_original: String,
@@ -56,7 +48,6 @@ pub struct LineMatch {
     pub line_num: usize,   //NOTE: indentionally duplicate data
 }
 
-/// Helper to read the lines of a file and give you back an easy-iterable (from the cookbook).
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
     P: AsRef<Path>,
@@ -65,17 +56,15 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-/// A collection of source files, with their $idents.
 #[derive(Default, Debug, Clone)]
 pub struct CodeBase {
-    source_files: Vec<SourceCode>,
+    source_files: Vec<RawSourceCode>,
     idents: HashMap<String, String>,
 }
 
-/// In-memory representation of a rust-code source file.
 #[derive(Default, Debug, Clone)]
-pub struct SourceCode {
-    pub m: HashMap<usize, LineMatch>,
+pub struct RawSourceCode {
+    pub m: HashMap<usize, RawLine>,
     pub file: PathBuf,
     pub ident_locs: Vec<usize>,
     pub doc_locs: Vec<usize>,
@@ -83,28 +72,25 @@ pub struct SourceCode {
     pub named_idents: Vec<String>,
 }
 
-impl Deref for SourceCode {
-    type Target = HashMap<usize, LineMatch>;
+impl Deref for RawSourceCode {
+    type Target = HashMap<usize, RawLine>;
     fn deref(&self) -> &Self::Target {
         &self.m
     }
 }
-impl DerefMut for SourceCode {
+impl DerefMut for RawSourceCode {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.m
     }
 }
 
-impl SourceCode {
-    /// Create a new `SourceCode` from a given file, holding all lines of said file as `String`s.
-    /// Deref is implemented so that you can treat the internal `HashMap` that backs the struct, as
-    /// what-it-is.
+impl RawSourceCode {
     pub fn new_from_file<P>(file: P) -> Self
     where
         PathBuf: From<P>,
         P: AsRef<Path> + Copy,
     {
-        let mut sc = SourceCode {
+        let mut sc = RawSourceCode {
             m: HashMap::new(),
             file: PathBuf::from(file),
             ident_locs: Vec::new(),
@@ -120,7 +106,7 @@ impl SourceCode {
                 .enumerate()
                 .for_each(|(e, l)| {
                     if let Ok(l) = l {
-                        let mut lm = LineMatch {
+                        let mut lm = RawLine {
                             all_linked: Linked::Unprocessed,
                             contents_modified: None,
                             contents_original: l.into(),
@@ -141,77 +127,60 @@ impl SourceCode {
         sc.named_idents.dedup();
         sc
     }
-    /// Imposes docstring linking changes on any and all idents that're contained within self.
     pub fn preview_changes(&mut self) {
         let filepath = self.file.clone();
-        _ = self
-            .named_idents
-            .iter()
-            .map(|i| {
-                _ = self
-                    .m
-                    .iter_mut()
-                    .map(|(_k, lm)| match lm.flavour {
-                        Flavour::Docstring => {
-                            //BUG: this will actually fail when we have say [`Ident`] and Ident in the same line.
-                            if lm.contents_original.contains(i)
-                                && !lm.contents_original.contains(&format!("`{}`", i))
-                            {
-                                let needle = &format!("[`{}`]", i);
-                                lm.contents_modified =
-                                    Some(lm.contents_original.replace(i, needle));
-                                //TODO: move this out into a feedback.rs module
+        self.named_idents.iter().for_each(|i| {
+            self.m.iter_mut().for_each(|(_k, lm)| match lm.flavour {
+                Flavour::Docstring => {
+                    //BUG: this will actually fail when we have say [`Ident`] and Ident in the same line.
+                    //BUG: what if 'i' is logically a part of a word, say 'read' within 'readable'
+                    if lm.contents_original.contains(i)
+                        && !lm.contents_original.contains(&format!("`{}`", i))
+                    {
+                        let needle = &format!("[`{}`]", i);
+                        lm.contents_modified = Some(lm.contents_original.replace(i, needle));
+                        //TODO: move this out into a feedback.rs module
 
-                                println!("PREVIEW CHANGE FOR:");
-                                println!("{}::{}", filepath.display(), lm.line_num);
-                                println!("{}", &lm.contents_original);
-                                println!("{}\n", lm.contents_modified.clone().unwrap());
-                            }
-                            lm.all_linked = Linked::Complete;
-                        }
-                        _ => {}
-                    })
-                    .collect::<()>();
+                        println!("PREVIEW CHANGE FOR:");
+                        println!("{}::{}", filepath.display(), lm.line_num);
+                        println!("{}", &lm.contents_original);
+                        println!("{}\n", lm.contents_modified.clone().unwrap());
+                    }
+                    lm.all_linked = Linked::Complete;
+                }
+                _ => {}
             })
-            .collect::<()>();
+        });
     }
-    /// Execute the changes by mem-swapping the contents_original with the contents_modified and
     pub fn execute(&mut self) {
         let mut write_buf = HashMap::new();
         let (tx, rx) = mpsc::channel();
 
-        _ = self
-            .named_idents
-            .iter()
-            .map(|i| {
-                _ = self
-                    .m
-                    .iter()
-                    .map(|(_, lm)| {
-                        let tx_c = tx.clone();
-                        match lm.flavour {
-                            Flavour::Docstring => {
-                                //BUG: this will actually fail when we have say [`Ident`] and Ident in the same line.
-                                if lm.contents_original.contains(i)
-                                    && !lm.contents_original.contains(&format!("`{}`", i))
-                                {
-                                    let needle = &format!("[`{}`]", i);
-                                    if let Err(e) = tx_c.send((
-                                        lm.line_num,
-                                        lm.contents_original.replace(i, needle).clone(),
-                                    )) {
-                                        eprintln!("Failure to send:{}", e);
-                                    }
-                                }
+        self.named_idents.iter().for_each(|i| {
+            let tx_c = tx.clone();
+            self.m.iter().for_each(|(_, lm)| {
+                match lm.flavour {
+                    Flavour::Docstring => {
+                        //BUG: this will actually fail when we have say [`Ident`] and Ident in the same line.
+                        if lm.contents_original.contains(i)
+                            && !lm.contents_original.contains(&format!("`{}`", i))
+                        {
+                            let needle = &format!("[`{}`]", i);
+                            if let Err(e) = tx_c.send((
+                                lm.line_num,
+                                lm.contents_original.replace(i, needle).clone(),
+                            )) {
+                                eprintln!("Failure to send:{}", e);
                             }
-                            _ => {}
                         }
-                    })
-                    .collect::<()>();
+                    }
+                    _ => {}
+                }
             })
-            .collect::<()>();
+        });
 
         drop(tx);
+
         while let Ok((e, lm)) = rx.recv() {
             dbg!(&lm);
             write_buf.insert(e, lm);
@@ -219,32 +188,30 @@ impl SourceCode {
 
         self.write(write_buf)
     }
-    /// Writes the contents_modified field of all LineMatches to their original source files.
     fn write(&self, write_buf: HashMap<usize, String>) {
         let mut output = String::new();
 
-        _ = (0..self.total_lines)
-            .into_iter()
-            .map(|i| {
-                if let Some(m) = write_buf.get(&i) {
-                    output.push_str(&format!("{}\n", m))
-                } else {
-                    output.push_str(&format!("{}\n", self.get(&i).unwrap().contents_original))
-                }
-            })
-            .collect::<Vec<()>>();
+        (0..self.total_lines).into_iter().for_each(|i| {
+            if let Some(m) = write_buf.get(&i) {
+                output.push_str(&format!("{}\n", m))
+            } else {
+                output.push_str(&format!("{}\n", self.get(&i).unwrap().contents_original))
+            }
+        });
 
         std::fs::write(&self.file, output).unwrap();
     }
+
+    fn peek_context(&self, pivot_point: usize) -> Vec<RawLine> {
+        todo!()
+    }
 }
 
-impl LineMatch {
-    /// Processes the docs/idents that may be present in lines
+impl RawLine {
     fn process(&mut self) {
         self.find_docs();
         self.find_idents();
     }
-    /// Find the identifying keywords we're interested in.
     //TODO: Make this DRY with a macro
     fn find_idents(&mut self) {
         let text = self.contents_original.to_owned();
@@ -262,7 +229,6 @@ impl LineMatch {
         generate_ident_find_loops!(RUST_FN, RUST_TY, RUST_ENUM, RUST_STRUCT, RUST_TRAIT);
     }
 
-    /// marks `Self` as having, or not having a `///` docstring at the beginning of the line.
     fn find_docs(&mut self) {
         let text = self.contents_original.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
@@ -277,17 +243,17 @@ impl LineMatch {
 #[cfg(test)]
 mod tests {
     use super::Flavour;
-    use super::SourceCode;
+    use super::RawSourceCode;
     use super::*;
     #[test]
     fn read_sourcecode() {
-        let sc = SourceCode::new_from_file("src/main.rs");
+        let sc = RawSourceCode::new_from_file("src/main.rs");
         dbg!(sc);
     }
 
     #[test]
     fn read_lines_of_source() {
-        let mut sc = SourceCode::new_from_file("src/search/utils.rs");
+        let mut sc = RawSourceCode::new_from_file("src/search/utils.rs");
         //let mut sc = SourceCode::new_from_file("src/main.rs");
         //sc.preview_changes();
         sc.execute();
