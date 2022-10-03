@@ -14,7 +14,7 @@ fn main() -> Result<()> {
         //let mut rsc = RawSourceCode::new_from_file(&p);
         let mut rsc = RawSourceCode::new_from_file("src/main.rs");
         //rsc.preview_changes();
-        rsc.execute();
+        rsc.write();
     }
 
     Ok(())

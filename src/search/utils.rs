@@ -2,24 +2,16 @@
 #![allow(unused_imports)]
 use super::consts::*;
 
-use anyhow::Error;
-use rayon::iter::Enumerate;
 use rayon::prelude::*;
-use regex::Regex;
-use regex::RegexSet;
-use std::borrow::Cow;
 use std::collections::HashMap;
-use std::fmt::Display;
-use std::fs;
 use std::fs::File;
-use std::fs::OpenOptions;
-use std::io::BufWriter;
-use std::io::Write;
 use std::io::{self, BufRead};
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::mpsc;
+use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
@@ -98,6 +90,7 @@ impl RawSourceCode {
             total_lines: 0,
             named_idents: Vec::new(),
         };
+
         //TODO: MPSC this.
         if let Ok(lines) = read_lines(file) {
             lines
@@ -125,6 +118,7 @@ impl RawSourceCode {
         }
         sc.total_lines = sc.m.len();
         sc.named_idents.dedup();
+        sc.named_idents.retain(|x| x != ""); //TODO: can you initialise this better so avoid this?
         sc
     }
     pub fn preview_changes(&mut self) {
@@ -152,59 +146,79 @@ impl RawSourceCode {
             })
         });
     }
-    pub fn execute(&mut self) {
-        let mut write_buf = HashMap::new();
-        let (tx, rx) = mpsc::channel();
 
+    /// Generates modified lines and sends them to a buffer for writing.
+    fn generate_output(&self, tx: Sender<(usize, String)>) {
+        let tx_c = tx.clone();
         self.named_idents.iter().for_each(|i| {
-            let tx_c = tx.clone();
-            self.m.iter().for_each(|(_, lm)| {
-                match lm.flavour {
+            self.m
+                .iter()
+                .for_each(|(_, raw_line)| match raw_line.flavour {
                     Flavour::Docstring => {
-                        //BUG: this will actually fail when we have say [`Ident`] and Ident in the same line.
-                        if lm.contents_original.contains(i)
-                            && !lm.contents_original.contains(&format!("`{}`", i))
+                        //BUG: haven't accounted for multiple occurences, or a nested
+                        //occurence.
+                        if raw_line.contents_original.contains(i)
+                            && !raw_line.contents_original.contains(&format!("`{}`", i))
                         {
                             let needle = &format!("[`{}`]", i);
                             if let Err(e) = tx_c.send((
-                                lm.line_num,
-                                lm.contents_original.replace(i, needle).clone(),
+                                raw_line.line_num,
+                                raw_line.contents_original.replace(i, needle).clone(),
                             )) {
                                 eprintln!("Failure to send:{}", e);
                             }
                         }
                     }
                     _ => {}
-                }
-            })
+                })
         });
-
-        drop(tx);
-
-        while let Ok((e, lm)) = rx.recv() {
-            dbg!(&lm);
-            write_buf.insert(e, lm);
-        }
-
-        self.write(write_buf)
     }
-    fn write(&self, write_buf: HashMap<usize, String>) {
+    pub fn write(self) {
+        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
+
+        let tsrsc = self.clone();
+
+        let (tx, rx) = mpsc::channel();
+
+        let tx_c = tx.clone();
+        let txer = thread::spawn(move || tsrsc.generate_output(tx_c));
+
+        let wb_c = write_buf.clone();
+        let rxer = thread::spawn(move || {
+            while let Ok((e, ml)) = rx.recv() {
+                wb_c.lock().unwrap().insert(e, ml);
+            }
+        });
+        if let Ok(_) = txer.join() {
+            drop(tx);
+        }
+        rxer.join().expect("unexpected threat failure.");
+
         let mut output = String::new();
+        let write_buf_complete = write_buf.lock().unwrap();
 
         (0..self.total_lines).into_iter().for_each(|i| {
-            if let Some(m) = write_buf.get(&i) {
+            if let Some(m) = write_buf_complete.get(&i) {
+                dbg!(&m);
                 output.push_str(&format!("{}\n", m))
             } else {
                 output.push_str(&format!("{}\n", self.get(&i).unwrap().contents_original))
             }
         });
 
-        std::fs::write(&self.file, output).unwrap();
+        // Assuming the buffers are ordered at this stage...
+        eprintln!("{}", "-".repeat(80));
+        output.split('\n').for_each(|l| println!("{}", l));
+        eprintln!("{}", "-".repeat(80));
+
+        _ = std::fs::File::create("output.rs").unwrap();
+
+        std::fs::write("output.rs", output).unwrap();
     }
 
-    fn peek_context(&self, pivot_point: usize) -> Vec<RawLine> {
-        todo!()
-    }
+    // fn peek_context(&self, pivot_point: usize) -> Vec<RawLine> {
+    //     todo!()
+    // }
 }
 
 impl RawLine {
@@ -245,6 +259,9 @@ mod tests {
     use super::Flavour;
     use super::RawSourceCode;
     use super::*;
+    use anyhow::Result;
+    use glob::glob;
+
     #[test]
     fn read_sourcecode() {
         let sc = RawSourceCode::new_from_file("src/main.rs");
@@ -253,23 +270,24 @@ mod tests {
 
     #[test]
     fn read_lines_of_source() {
-        let mut sc = RawSourceCode::new_from_file("src/search/utils.rs");
-        //let mut sc = SourceCode::new_from_file("src/main.rs");
-        //sc.preview_changes();
-        sc.execute();
+        let mut rsc = RawSourceCode::new_from_file("src/search/utils.rs");
+        rsc.preview_changes();
     }
-
-    // #[test]
-    // fn write_source_back() {
-    //     let mut sc = SourceCode::new_from_file("src/main.rs");
-    //     for (_, v) in sc.iter_mut() {
-    //         v.process();
-    //         //v.impose(&mut sc);
-    //         dbg!(v);
-    //     }
-    //     (0..sc.total_lines)
-    //         .into_iter()
-    //         .enumerate()
-    //         .for_each(|(e, l)| println!("{:?}", sc.get(&e).unwrap()))
-    // }
+    #[test]
+    fn write_to_main() {
+        for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
+            let p = path;
+            let rsc = RawSourceCode::new_from_file(&p);
+            dbg!(&rsc.named_idents);
+            rsc.write()
+        }
+    }
+    #[test]
+    fn show_matched_idents() {
+        for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
+            let p = path;
+            let rsc = RawSourceCode::new_from_file(&p);
+            dbg!(rsc.named_idents);
+        }
+    }
 }
