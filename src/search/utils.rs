@@ -8,6 +8,8 @@ use core::fmt::Display;
 use glob::glob;
 use log::{debug, error, info, trace, warn};
 use std::collections::HashMap;
+use std::fs;
+use std::hash::Hash;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::path::{Path, PathBuf};
@@ -16,7 +18,7 @@ use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Hash)]
 pub enum Linked {
     Complete,
     Loaded,
@@ -25,20 +27,38 @@ pub enum Linked {
     #[default]
     Unprocessed,
 }
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Hash)]
 pub enum Flavour {
     Docstring,
     Declare,
     #[default]
     Tasteless,
 }
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug, Clone, Hash)]
 pub struct RawLine {
     pub line_num: usize, //NOTE: indentionally duplicate data
     pub all_linked: Linked,
     pub contents_original: String,
     pub flavour: Flavour,
     pub idents: Vec<String>, //NOTE: expended data (exists temporarily to populate the SourceCode struct(s))
+    pub source_file: PathBuf,
+}
+
+#[derive(Default, Debug, Clone, Hash)]
+struct AdjustedLine {
+    pub line_num: usize,
+    pub contents_original: String,
+    pub source_file: PathBuf,
+}
+
+impl From<RawLine> for AdjustedLine {
+    fn from(line: RawLine) -> Self {
+        Self {
+            line_num: line.line_num,
+            contents_original: line.contents_original,
+            source_file: line.source_file,
+        }
+    }
 }
 
 /// All the source code combined!
@@ -85,121 +105,80 @@ impl SourceTree {
         .populate_idents()
     }
     /// makes adjustments to RawLines from within RawSourceCode's RawLines
-    fn make_adjustments(&self, tx: Sender<(usize, String)>) {
+    fn make_adjustments(&self, tx: Sender<(RawLine, String)>) {
         let tx_c = tx.clone();
         self.source_files.iter().for_each(|sf| {
-            sf.named_idents.iter().for_each(|i| {
-                sf.m.iter()
+            sf.named_idents.iter().cloned().for_each(|i| {
+                sf.iter()
                     .for_each(|(_, raw_line)| match raw_line.flavour {
                         Flavour::Docstring => {
                             //BUG: haven't accounted for multiple occurences, or a nested
                             //occurence.
-                            if raw_line.should_be_modified(i) {
+                            if raw_line.should_be_modified(&i) {
+                                let mut raw_line = raw_line.clone();
+                                    raw_line.contents_original = raw_line.process_changes(&i);
 
-                                tx_c.send((
-                                    raw_line.line_num,
-                                    raw_line.process_changes(i)
-                                ))
+                                tx_c.send(
+                                    (raw_line.to_owned(),
+                                    sf.file.display().to_string())
+                                )
                                 .expect("Unable to send line on channel, something has gone HORRIBLY WRONG!");
-                                info!("Send success!")
                             }
                         }
-
-                        _ => {}
-                    })
+                        _ => {
+                            panic!("This shoudn'd be reachable...");
+                        }
+                    });
             });
         })
     }
 
-    pub fn preview_changes(self) {
+    pub fn write_changes(self, write_flag: bool) {
+        // Adjustment thread -> sends to builder thread
         let tsrsc = self.clone();
+        let (tx_adj_2_build, rx_build) = mpsc::channel();
+        let tx_adj_c = tx_adj_2_build.clone();
+        let adjust_t = thread::spawn(move || tsrsc.make_adjustments(tx_adj_c));
 
-        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
-        let (tx, rx) = mpsc::channel();
-        let tx_c = tx.clone();
+        // Builder thread -> sends to writer
+        let (tx_build, rx_writer) = mpsc::channel();
 
-        let txer = thread::spawn(move || tsrsc.make_adjustments(tx_c));
-
-        let wb_c = write_buf.clone();
-        let rxer = thread::spawn(move || {
-            while let Ok((e, ml)) = rx.recv() {
-                wb_c.lock().unwrap().insert(e, ml);
+        // THE RX_BUILD gets values here, from tsrsc.make_adjustments(tx_c)
+        let builder_t = thread::spawn(move || {
+            let mut sf_hm: HashMap<String, Vec<AdjustedLine>> = HashMap::new();
+            while let Ok((rl, filepath)) = rx_build.recv() {
+                sf_hm.entry(filepath).and_modify(|v| v.push(rl.into()));
             }
+            tx_build
+                .send(sf_hm)
+                .expect("unable to send complete sf_hm to writer!")
         });
 
-        if let Ok(_) = txer.join() {
-            drop(tx);
+        if let Ok(_) = adjust_t.join() {
+            drop(tx_adj_2_build);
         }
 
-        rxer.join().expect("unexpected threat failure.");
+        if let Ok(_) = builder_t.join() {
+            // ALL THE LINES ARE IN SF_HM
+        }
 
-        let write_buf_complete = write_buf.lock().unwrap();
+        // THE WRITER thread is actually *this* one, the main one.
+        while let Ok(sf_hm) = rx_writer.recv() {
+            // sf_hm is a hashmap of filepath, adjusted_line
 
-        let total_lines = self.source_files.iter().map(|sf| sf.total_lines).sum();
-        self.source_files
-            .iter()
-            .for_each(|e| info!("Working on: {:?}", e.file.display()));
+            sf_hm.iter().for_each(|(sf_path, v)| {
+                let mut output: Vec<&str> = Vec::new();
+                for (e, _) in v.iter().enumerate() {
+                    let current = &v[e];
+                    output.push(&current.contents_original)
+                }
 
-        for sf in self.source_files.iter() {
-            let mut output = String::new();
-            (0..total_lines).into_iter().for_each(|i| {
-                if let Some(m) = write_buf_complete.get(&i) {
-                    println!("{}", sf.file.display());
-                    println!("{}{}", i, m.replace("\t", ""));
-                    output.push_str(&format!("{}\n", m))
-                } else {
-                    if let Some(sf) = sf.get(&i) {
-                        output.push_str(&format!("{}\n", sf.contents_original))
-                    }
+                // Write 'output'
+                if write_flag {
+                    fs::write(&sf_path, output.join("\n"))
+                        .expect("problem writing output to filepath")
                 }
             });
-        }
-    }
-
-    pub fn write_changes(self) {
-        let tsrsc = self.clone();
-
-        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
-        let (tx, rx) = mpsc::channel();
-        let tx_c = tx.clone();
-
-        let txer = thread::spawn(move || tsrsc.make_adjustments(tx_c));
-
-        let wb_c = write_buf.clone();
-        let rxer = thread::spawn(move || {
-            while let Ok((e, ml)) = rx.recv() {
-                wb_c.lock().unwrap().insert(e, ml);
-            }
-        });
-
-        if let Ok(_) = txer.join() {
-            drop(tx);
-        }
-
-        rxer.join().expect("unexpected threat failure.");
-
-        let write_buf_complete = write_buf.lock().unwrap();
-
-        self.source_files
-            .iter()
-            .for_each(|e| info!("Working on: {:?}", e.file.display()));
-
-        for sf in self.source_files.iter() {
-            let mut output = String::new();
-            (0..sf.total_lines).into_iter().for_each(|i| {
-                if let Some(m) = write_buf_complete.get(&i) {
-                    info!("Sent a modified {}::{}\n", sf.file.display(), i);
-                    output.push_str(&format!("{}\n", m))
-                } else {
-                    if let Some(sf) = sf.get(&i) {
-                        output.push_str(&format!("{}\n", sf.contents_original))
-                    }
-                }
-            });
-            output.split('\n').for_each(|l| println!("{}", l));
-
-            // _ = std::fs::File::create(&sf.file).unwrap();
-            // std::fs::write(&sf.file, output).unwrap();
         }
     }
 }
@@ -241,7 +220,6 @@ impl RawSourceCode {
             named_idents: Vec::new(),
         };
 
-        //TODO: MPSC this.
         if let Ok(lines) = crate::read_lines(file) {
             lines
                 .collect::<Vec<_>>()
@@ -252,9 +230,8 @@ impl RawSourceCode {
                         let mut raw_line = RawLine {
                             all_linked: Linked::Unprocessed,
                             contents_original: l.into(),
-                            flavour: Flavour::Tasteless,
-                            idents: Vec::new(),
                             line_num: e,
+                            ..Default::default()
                         };
                         raw_line.find_docs();
                         raw_line.find_idents();
@@ -416,6 +393,12 @@ mod tests {
             "a [`preview_changes`] to be linked, and another [`preview_changes`] here linked too.";
         assert_eq!(expected, &res);
     }
+    #[test]
+    fn trial_on_this_source() {
+        let st = SourceTree::new_from_cwd();
+        st.write_changes(false);
+    }
+
     #[test]
     fn fullstop_after_ident() {
         let example = r#"a preview_changes to the mighty SourceTree."#;
