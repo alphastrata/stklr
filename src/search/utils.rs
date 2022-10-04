@@ -73,7 +73,7 @@ impl SourceTree {
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
             sf.named_idents.iter().for_each(|e| {
-                info!("{}::{}", sf.file.display(), e);
+                debug!("{}::{}", sf.file.display(), e);
                 self.named_idents.push(e.to_string())
             });
         });
@@ -124,10 +124,9 @@ impl SourceTree {
                                 )
                                 .expect("Unable to send line on channel, something has gone HORRIBLY WRONG!");
                             }
+                            //dbg!("SENT!");
                         }
-                        _ => {
-                            panic!("This shoudn'd be reachable...");
-                        }
+                        _ => {},
                     });
             });
         })
@@ -148,10 +147,12 @@ impl SourceTree {
             let mut sf_hm: HashMap<String, Vec<AdjustedLine>> = HashMap::new();
             while let Ok((rl, filepath)) = rx_build.recv() {
                 sf_hm.entry(filepath).and_modify(|v| v.push(rl.into()));
+                dbg!("PUSH");
             }
             tx_build
                 .send(sf_hm)
-                .expect("unable to send complete sf_hm to writer!")
+                .expect("unable to send complete sf_hm to writer!");
+            dbg!("SF_HM GONE");
         });
 
         if let Ok(_) = adjust_t.join() {
@@ -165,11 +166,14 @@ impl SourceTree {
         // THE WRITER thread is actually *this* one, the main one.
         while let Ok(sf_hm) = rx_writer.recv() {
             // sf_hm is a hashmap of filepath, adjusted_line
+            dbg!(&sf_hm);
 
             sf_hm.iter().for_each(|(sf_path, v)| {
                 let mut output: Vec<&str> = Vec::new();
                 for (e, _) in v.iter().enumerate() {
                     let current = &v[e];
+                    println!("{}::{}", &current.line_num, &current.contents_original);
+
                     output.push(&current.contents_original)
                 }
 
@@ -177,7 +181,7 @@ impl SourceTree {
                     fs::write(&sf_path, output.join("\n"))
                         .expect("problem writing output to filepath")
                 } else {
-                    output.iter().for_each(|e| eprintln!("{}", e));
+                    output.iter().for_each(|e| println!("{}", e));
                 }
             });
         }
@@ -281,11 +285,11 @@ impl RawLine {
 
         let needle = &format!("[`{}`]", i);
 
-        dbg!(&padded_i);
-        dbg!(&padded_self);
-        dbg!(&changes_to_make);
-        dbg!(&needle);
-
+        //        dbg!(&padded_i);
+        //        dbg!(&padded_self);
+        //        dbg!(&changes_to_make);
+        //        dbg!(&needle);
+        //
         self.contents_original
             .clone()
             .replacen(i, needle, changes_to_make.len())

@@ -13,7 +13,7 @@ pub fn setup_logger() -> Result<(), fern::InitError> {
                 message // The message a developer has defined within the info!/error!/warn! macro.
             ))
         })
-        .level(log::LevelFilter::Debug) // NOTE: we may want to change this in prod.
+        .level(log::LevelFilter::Info) // NOTE: we may want to change this in prod.
         .chain(std::io::stdout()) // NOTE: we may wnat to remove this in prod, as we don't really
         .chain(fern::log_file(termite_path)?)
         .apply()?;
