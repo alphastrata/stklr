@@ -357,10 +357,16 @@ mod tests {
             idents: vec!["preview_changes".into()],
             ..Default::default()
         };
-        let res = raw_line.process_changes(&raw_line.idents[0]);
+
         let expected =
             "a [`preview_changes`] to be linked, and another [`preview_changes`] here linked too.";
-        assert_eq!(expected, &res.contents);
+        assert_eq!(
+            expected,
+            raw_line
+                .clone()
+                .process_changes(&raw_line.idents[0])
+                .contents
+        );
     }
     #[test]
     fn trial_on_this_source() {
