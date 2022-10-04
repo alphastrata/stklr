@@ -3,7 +3,7 @@ pub mod feedback;
 pub mod search;
 pub mod termite;
 
-// /// `SearchBuf` is a buffer holding all lines with matches.
+// /// SearchBuf is a buffer holding all lines with matches.
 // #[derive(Default, Debug, Clone)]
 // struct SearchBuf {
 //     //m: HashMap<usize, LineMatch>,

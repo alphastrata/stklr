@@ -213,13 +213,13 @@ impl CodeBase {
             });
             output.split('\n').for_each(|l| println!("{}", l));
 
-            let tmp = format!(
-                "./results/{}",
-                sf.file.display().to_string().split('/').last().unwrap()
-            );
+            // let tmp = format!(
+            //     "./results/{}",
+            //     sf.file.display().to_string().split('/').last().unwrap()
+            // );
 
-            _ = std::fs::File::create(&tmp).unwrap();
-            std::fs::write(&tmp, output).unwrap();
+            _ = std::fs::File::create(&sf.file).unwrap();
+            std::fs::write(&sf.file, output).unwrap();
         }
     }
 }

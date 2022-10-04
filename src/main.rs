@@ -15,6 +15,6 @@ use STKLR::search::utils::CodeBase;
 /// write_changes should be picked up.
 fn main() -> Result<()> {
     let cb: CodeBase = CodeBase::new_from_cwd();
-    cb.preview_changes();
+    cb.write_changes();
     Ok(())
 }

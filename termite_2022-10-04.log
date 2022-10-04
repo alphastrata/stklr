@@ -9333,3 +9333,475 @@
 [2022-10-04][19:58:19][INFO][STKLR::search::utils][154] Working on: "src/search/mod.rs"
 [2022-10-04][19:58:19][INFO][STKLR::search::utils][154] Working on: "src/search/utils.rs"
 [2022-10-04][19:58:19][INFO][STKLR::search::utils][154] Working on: "src/termite.rs"
+[2022-10-04][20:30:19][INFO][STKLR::termite][21] Logger setup complete.
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/lib.rs::SearchBuf
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/lib.rs::init
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/lib.rs::default
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/lib.rs::channel
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::anyhow
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::Result
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::STKLR
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::search
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::utils
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::CodeBase
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::main
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/main.rs::new_from_cwd
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/consts.rs::lazy_static
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/consts.rs::regex
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/consts.rs::Regex
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/consts.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::consts
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::crate
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::termite
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::log
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::core
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::fmt
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Display
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::glob
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::rayon
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::prelude
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::collections
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::HashMap
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::fs
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::File
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::io
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::ops
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Deref
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::ops
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::DerefMut
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::path
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::rc
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Rc
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::sync
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::mpsc
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::sync
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::mpsc
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Sender
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::sync
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::thread
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::thread
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::JoinHandle
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Linked
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Flavour
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::RawLine
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::read_lines
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Result
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Lines
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::BufReader
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::open
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::BufReader
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::CodeBase
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::populate_idents
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_cwd
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_dir
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::setup_logger
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::ok
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::make_adjustments
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Docstring
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::preview_changes
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::channel
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::spawn
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::write_changes
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::channel
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::spawn
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::fs
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::File
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::create
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::fs
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::write
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::RawSourceCode
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Target
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::deref
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Target
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::deref_mut
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Target
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::from
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Unprocessed
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Tasteless
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::should_be_modified
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::process_changes
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::process
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::find_idents
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Declare
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::find_docs
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Docstring
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Flavour
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::RawSourceCode
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::anyhow
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Result
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::glob
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::handle_imports
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::anyhow
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Result
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::STKLR
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::search
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::utils
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::CodeBase
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::STKLR
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::search
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::utils
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::RawSourceCode
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Unprocessed
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Tasteless
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::handle_lifetime_annotations
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::servitude
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::default
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::handle_traits
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::Bless
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::bless
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::default
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::multi_edit_single_line
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_dir
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::read_sourcecode
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::write_to_main
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_cwd
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::ok
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::show_matched_idents
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::ok
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::log
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::setup_logger
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::InitError
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::Local
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::now
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::Dispatch
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::new
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::Local
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::now
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::LevelFilter
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::Debug
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::io
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::stdout
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][69] src/termite.rs::log_file
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/cmd/mod.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/feedback/mod.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/lib.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/main.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/search/consts.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/search/mod.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/search/utils.rs"
+[2022-10-04][20:30:19][INFO][STKLR::search::utils][154] Working on: "src/termite.rs"
+[2022-10-04][20:30:41][INFO][STKLR::termite][21] Logger setup complete.
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/lib.rs::SearchBuf
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/lib.rs::init
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/lib.rs::default
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/lib.rs::channel
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::anyhow
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::Result
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::STKLR
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::search
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::utils
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::CodeBase
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::main
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/main.rs::new_from_cwd
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/consts.rs::lazy_static
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/consts.rs::regex
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/consts.rs::Regex
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/consts.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::consts
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::crate
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::termite
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::log
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::core
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::fmt
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Display
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::glob
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::rayon
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::prelude
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::collections
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::HashMap
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::fs
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::File
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::io
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::ops
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Deref
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::ops
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::DerefMut
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::path
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::rc
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Rc
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::sync
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::mpsc
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::sync
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::mpsc
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Sender
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::sync
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::thread
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::std
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::thread
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::JoinHandle
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Linked
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Flavour
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::RawLine
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::read_lines
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Result
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Lines
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::BufReader
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::open
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::BufReader
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::CodeBase
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::populate_idents
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_cwd
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_dir
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::setup_logger
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::ok
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::make_adjustments
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Docstring
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::preview_changes
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::channel
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::spawn
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::write_changes
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::channel
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::spawn
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::fs
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::File
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::create
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::fs
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::write
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::RawSourceCode
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Target
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::deref
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Target
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::deref_mut
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Target
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::from
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Unprocessed
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Tasteless
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::should_be_modified
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::process_changes
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::process
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::find_idents
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Declare
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::find_docs
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Docstring
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Flavour
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::RawSourceCode
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::super
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::anyhow
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Result
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::glob
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::handle_imports
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::anyhow
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Result
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::STKLR
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::search
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::utils
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::CodeBase
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::STKLR
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::search
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::utils
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::RawSourceCode
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Unprocessed
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Tasteless
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::handle_lifetime_annotations
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::servitude
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::default
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::handle_traits
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::Bless
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::bless
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::default
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::multi_edit_single_line
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_dir
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::read_sourcecode
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::write_to_main
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_cwd
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::ok
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::show_matched_idents
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::ok
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/search/utils.rs::new_from_file
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::log
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::setup_logger
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::InitError
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::Local
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::now
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::Dispatch
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::new
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::Local
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::now
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::LevelFilter
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::Debug
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::io
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::stdout
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][69] src/termite.rs::log_file
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][117] Send success!
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/cmd/mod.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/feedback/mod.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/lib.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/main.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/search/consts.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/search/mod.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/search/utils.rs"
+[2022-10-04][20:30:41][INFO][STKLR::search::utils][154] Working on: "src/termite.rs"
