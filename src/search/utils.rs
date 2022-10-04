@@ -1,7 +1,11 @@
-#![allow(dead_code)]
 #![allow(unused_imports)]
-use super::consts::*;
+#![allow(dead_code)]
 
+use super::consts::*;
+use crate::termite;
+use log::{debug, error, info, trace, warn};
+
+use core::fmt::Display;
 use glob::glob;
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -17,21 +21,23 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub enum Linked {
     Complete,
     Loaded,
     Partial,
     Irrelevant,
+    #[default]
     Unprocessed,
 }
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub enum Flavour {
     Docstring,
     Declare,
+    #[default]
     Tasteless,
 }
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct RawLine {
     pub all_linked: Linked,
     pub contents_modified: Option<String>,
@@ -59,18 +65,29 @@ impl CodeBase {
     /// Populates the idents we care about...
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
-            sf.named_idents
-                .iter()
-                .for_each(|e| self.named_idents.push(e.to_string()));
+            sf.named_idents.iter().for_each(|e| {
+                info!("{}::{}", sf.file.display(), e);
+                self.named_idents.push(e.to_string())
+            });
         });
         self
     }
     /// Creates a new CodeBase from the glob searching the current working directory the app is run
     /// in.
-    fn new_from_cwd() -> Self {
+    pub fn new_from_cwd() -> Self {
+        Self::new_from_dir(".")
+    }
+    /// Creates a new CodeBase from a given directory.
+    pub fn new_from_dir<P>(dir: P) -> Self
+    where
+        P: Display + AsRef<Path>,
+    {
+        _ = termite::setup_logger().unwrap();
+
+        let search_path = format!("{}/**/*.rs", dir);
         CodeBase {
             source_files: {
-                glob("./**/*.rs")
+                glob(&search_path)
                     .unwrap()
                     .filter_map(Result::ok)
                     .map(|p| RawSourceCode::new_from_file(&p))
@@ -90,25 +107,24 @@ impl CodeBase {
                         Flavour::Docstring => {
                             //BUG: haven't accounted for multiple occurences, or a nested
                             //occurence.
-                            if raw_line.contents_original.contains(i)
-                                && !raw_line.contents_original.contains(&format!("`{}`", i))
-                            {
-                                let needle = &format!("[`{}`]", i);
-                                if let Err(e) = tx_c.send((
+                            if raw_line.should_be_modified(i) {
+
+                                tx_c.send((
                                     raw_line.line_num,
-                                    raw_line.contents_original.replace(i, needle).clone(),
-                                )) {
-                                    eprintln!("Failure to send:{}", e);
-                                }
+                                    raw_line.process_changes(i)
+                                ))
+                                .expect("Unable to send line on channel, something has gone HORRIBLY WRONG!");
+                                info!("Send success!")
                             }
                         }
+
                         _ => {}
                     })
             });
         })
     }
 
-    pub fn write(self) {
+    pub fn preview_changes(self) {
         let tsrsc = self.clone();
 
         let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
@@ -133,15 +149,16 @@ impl CodeBase {
         let write_buf_complete = write_buf.lock().unwrap();
 
         let total_lines = self.source_files.iter().map(|sf| sf.total_lines).sum();
-        // self.source_files
-        //     .iter()
-        //     .for_each(|e| println!("{:?}", e.file.display()));
-        // panic!();
+        self.source_files
+            .iter()
+            .for_each(|e| info!("Working on: {:?}", e.file.display()));
 
         for sf in self.source_files.iter() {
             let mut output = String::new();
             (0..total_lines).into_iter().for_each(|i| {
                 if let Some(m) = write_buf_complete.get(&i) {
+                    println!("{}", sf.file.display());
+                    println!("{}{}", i, m.replace("\t", ""));
                     output.push_str(&format!("{}\n", m))
                 } else {
                     if let Some(sf) = sf.get(&i) {
@@ -149,13 +166,55 @@ impl CodeBase {
                     }
                 }
             });
-            // Assuming the buffers are ordered at this stage...
-            // eprintln!("{}", "-".repeat(80));
-            // output.split('\n').for_each(|l| println!("{}", l));
-            // eprintln!("{}", "-".repeat(80));
+        }
+    }
+
+    pub fn write_changes(self) {
+        let tsrsc = self.clone();
+
+        let write_buf: Arc<Mutex<HashMap<usize, String>>> = Arc::new(Mutex::new(HashMap::new()));
+        let (tx, rx) = mpsc::channel();
+        let tx_c = tx.clone();
+
+        let txer = thread::spawn(move || tsrsc.make_adjustments(tx_c));
+
+        let wb_c = write_buf.clone();
+        let rxer = thread::spawn(move || {
+            while let Ok((e, ml)) = rx.recv() {
+                wb_c.lock().unwrap().insert(e, ml);
+            }
+        });
+
+        if let Ok(_) = txer.join() {
+            drop(tx);
+        }
+
+        rxer.join().expect("unexpected threat failure.");
+
+        let write_buf_complete = write_buf.lock().unwrap();
+
+        let total_lines = self.source_files.iter().map(|sf| sf.total_lines).sum();
+
+        self.source_files
+            .iter()
+            .for_each(|e| info!("Working on: {:?}", e.file.display()));
+
+        for sf in self.source_files.iter() {
+            let mut output = String::new();
+            (0..total_lines).into_iter().for_each(|i| {
+                if let Some(m) = write_buf_complete.get(&i) {
+                    info!("Sent a modified {}::{}\n", sf.file.display(), i);
+                    output.push_str(&format!("{}\n", m))
+                } else {
+                    if let Some(sf) = sf.get(&i) {
+                        output.push_str(&format!("{}\n", sf.contents_original))
+                    }
+                }
+            });
+            output.split('\n').for_each(|l| println!("{}", l));
 
             let tmp = format!(
-                "output/{}",
+                "./results/{}",
                 sf.file.display().to_string().split('/').last().unwrap()
             );
 
@@ -235,6 +294,30 @@ impl RawSourceCode {
 }
 
 impl RawLine {
+    /// Will return true for a SINGLE instance of when a modification should be made, how many may
+    /// really be in there is the domain of [`process_changes`]
+    fn should_be_modified(&self, i: &str) -> bool {
+        if self.contents_original.contains(i)
+            || self.contents_original.contains(&format!("{i}s"))
+            || self.contents_original.contains(&format!("{i}'s"))
+                && !self.contents_original.contains(&format!("`{}`", i))
+                && self.contents_original.contains("///")
+        {
+            return true;
+        }
+        false
+    }
+    /// Actually processes the modifications to a RawLine's contents_modified
+    fn process_changes(&self, i: &str) -> String {
+        let padded_i = format!(" {} ", i);
+        let padded_self = format!("{} ", self.contents_original);
+        let changes_to_make: Vec<&str> = padded_self.matches(&padded_i).collect();
+        let needle = &format!("[`{}`]", i);
+
+        self.contents_original
+            .clone()
+            .replacen(i, needle, changes_to_make.len())
+    }
     fn process(&mut self) {
         self.find_docs();
         self.find_idents();
@@ -247,13 +330,22 @@ impl RawLine {
                 $(for caps in $CONST.captures_iter(&text) {
                     if let Some(v) = caps.name("ident") {
                         let cap = v.as_str().to_string();
+                        trace!("{}::{}", self.line_num, cap);
                         self.flavour = Flavour::Declare;
                         self.hits.push(cap);
                     }
                 })*
             };
         }
-        generate_ident_find_loops!(RUST_FN, RUST_TY, RUST_ENUM, RUST_STRUCT, RUST_TRAIT);
+        generate_ident_find_loops!(
+            RUST_FN,
+            RUST_TY,
+            RUST_ENUM,
+            RUST_STRUCT,
+            RUST_TRAIT,
+            RUST_USE,
+            RUST_IMPORT
+        );
     }
 
     /// Process preview_changes RawSourceCode [`find_docs`]
@@ -277,15 +369,92 @@ mod tests {
     use glob::glob;
 
     #[test]
+    fn handle_imports() {
+        let example = r#"
+                        use anyhow::Result;
+                        use STKLR::search::utils::CodeBase;
+                        use STKLR::search::utils::RawSourceCode;
+                        }"#;
+
+        let mut rl = RawLine {
+            all_linked: Linked::Unprocessed,
+            contents_modified: None,
+            contents_original: example.into(),
+            flavour: Flavour::Tasteless,
+            hits: Vec::new(),
+            line_num: 0,
+        };
+
+        rl.find_idents();
+        rl.hits.dedup();
+        assert_eq!(rl.hits.len(), 9);
+        let answers = [
+            "anyhow",
+            "STKLR",
+            "Result",
+            "search",
+            "utils",
+            "CodeBase",
+            "search",
+            "utils",
+            "RawSourceCode",
+        ];
+        rl.hits
+            .iter()
+            .enumerate()
+            .for_each(|(e, hit)| assert_eq!(answers[e], hit));
+    }
+    #[test]
+    fn handle_lifetime_annotations() {
+        let example = r#"async fn servitude<'a>(a: &'a str) -> bool{}"#;
+        let mut rl = RawLine {
+            contents_original: example.into(),
+            ..Default::default()
+        };
+        rl.find_idents();
+        rl.hits.dedup();
+        assert_eq!(rl.hits.len(), 1);
+        assert_eq!(rl.hits[0], "servitude");
+    }
+    #[test]
+    fn handle_traits() {
+        let example = r#"pub trait Bless { 
+        fn bless(&P) -> Blessing 
+        where P: Clone + Send + Sync {
+        };
+        }"#;
+        let mut rl = RawLine {
+            contents_original: example.into(),
+            ..Default::default()
+        };
+        rl.find_idents();
+        rl.hits.dedup();
+        assert_eq!(rl.hits.len(), 2);
+    }
+    #[test]
+    fn multi_edit_single_line() {
+        let cb = CodeBase::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+
+        cb.write_changes();
+    }
+
+    //TODO: work out this nonsense, with 'to' there's no function for that in there!
+    // Helper [`to`] return the x and y values from a given path
+
+    //TODO: you need a test for nested vec<T>s...
+    // * `range` a Vector<[`Mat`]> of the images you want to concat,...
+
+    #[test]
     fn read_sourcecode() {
         _ = RawSourceCode::new_from_file("src/main.rs");
     }
 
     #[test]
     fn write_to_main() {
+        //let cb = CodeBase::new_from_cwd();
         let cb: CodeBase = CodeBase {
             source_files: {
-                glob("src/**/*.rs")
+                glob("./src/main.rs")
                     .unwrap()
                     .filter_map(Result::ok)
                     .map(|p| RawSourceCode::new_from_file(&p))
@@ -293,7 +462,9 @@ mod tests {
             },
             named_idents: Vec::new(),
         };
-        cb.write();
+
+        let cb = cb.populate_idents();
+        cb.write_changes();
     }
     #[test]
     fn show_matched_idents() {

@@ -1,14 +1,20 @@
+//
+//! STKLR
+//
+#![allow(non_snake_case)]
 use anyhow::Result;
-use glob::glob;
 
-/// use STKLR::search::utils::CodeBase;
-use STKLR::search::utils::RawSourceCode;
+use STKLR::search::utils::CodeBase;
 
-/// doesn't relate at all to CodeBase <<< SHOULD BE PICKED UP.
-struct UnDocumented {}
-
-// our program begins here
+///
+/// We want a CodeBase to get linked
+/// A [`search`] to be skipped
+/// a preview_changes to be linked, and another preview_changes here linked too.
+/// the Result<()> would be a bonus.
+/// and the main
+/// write_changes should be picked up.
 fn main() -> Result<()> {
+    let cb: CodeBase = CodeBase::new_from_cwd();
+    cb.preview_changes();
     Ok(())
 }
-

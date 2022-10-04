@@ -8,4 +8,6 @@ lazy_static! {
     pub static ref RUST_STRUCT: Regex = Regex::new(r"(struct\s{1}(?P<ident>\w*))").unwrap();
     pub static ref RUST_TRAIT: Regex = Regex::new(r"(trait\s{1}(?P<ident>\w*))").unwrap();
     pub static ref RUST_TY: Regex = Regex::new(r"(type\s{1}(?P<ident>\w*))").unwrap();
+    pub static ref RUST_USE: Regex = Regex::new(r"(use\s{1}(?P<ident>\w*))").unwrap();
+    pub static ref RUST_IMPORT: Regex = Regex::new(r"(::{1}(?P<ident>\w*))").unwrap();
 }
