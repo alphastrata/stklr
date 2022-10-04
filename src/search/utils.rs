@@ -173,10 +173,11 @@ impl SourceTree {
                     output.push(&current.contents_original)
                 }
 
-                // Write 'output'
                 if write_flag {
                     fs::write(&sf_path, output.join("\n"))
                         .expect("problem writing output to filepath")
+                } else {
+                    output.iter().for_each(|e| eprintln!("{}", e));
                 }
             });
         }
