@@ -3,23 +3,18 @@
 
 use super::consts::*;
 use crate::termite;
-use log::{debug, error, info, trace, warn};
 
 use core::fmt::Display;
 use glob::glob;
-use rayon::prelude::*;
+use log::{debug, error, info, trace, warn};
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{self, BufRead};
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
 use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use std::thread::JoinHandle;
 
 #[derive(Default, Debug, Clone)]
 pub enum Linked {
@@ -39,29 +34,21 @@ pub enum Flavour {
 }
 #[derive(Default, Debug, Clone)]
 pub struct RawLine {
+    pub line_num: usize, //NOTE: indentionally duplicate data
     pub all_linked: Linked,
-    pub contents_modified: Option<String>,
     pub contents_original: String,
     pub flavour: Flavour,
-    pub hits: Vec<String>, //NOTE: expended data (exists temporarily to populate the SourceCode struct(s))
-    pub line_num: usize,   //NOTE: indentionally duplicate data
+    pub idents: Vec<String>, //NOTE: expended data (exists temporarily to populate the SourceCode struct(s))
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where
-    P: AsRef<Path>,
-{
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-
+/// All the source code combined!
 #[derive(Default, Debug, Clone)]
-pub struct CodeBase {
+pub struct SourceTree {
     pub source_files: Vec<RawSourceCode>,
     pub named_idents: Vec<String>,
 }
 
-impl CodeBase {
+impl SourceTree {
     /// Populates the idents we care about...
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
@@ -72,12 +59,12 @@ impl CodeBase {
         });
         self
     }
-    /// Creates a new CodeBase from the glob searching the current working directory the app is run
+    /// Creates a new SourceTree from the glob searching the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         Self::new_from_dir(".")
     }
-    /// Creates a new CodeBase from a given directory.
+    /// Creates a new SourceTree from a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
@@ -85,7 +72,7 @@ impl CodeBase {
         _ = termite::setup_logger().unwrap();
 
         let search_path = format!("{}/**/*.rs", dir);
-        CodeBase {
+        SourceTree {
             source_files: {
                 glob(&search_path)
                     .unwrap()
@@ -193,15 +180,13 @@ impl CodeBase {
 
         let write_buf_complete = write_buf.lock().unwrap();
 
-        let total_lines = self.source_files.iter().map(|sf| sf.total_lines).sum();
-
         self.source_files
             .iter()
             .for_each(|e| info!("Working on: {:?}", e.file.display()));
 
         for sf in self.source_files.iter() {
             let mut output = String::new();
-            (0..total_lines).into_iter().for_each(|i| {
+            (0..sf.total_lines).into_iter().for_each(|i| {
                 if let Some(m) = write_buf_complete.get(&i) {
                     info!("Sent a modified {}::{}\n", sf.file.display(), i);
                     output.push_str(&format!("{}\n", m))
@@ -213,13 +198,8 @@ impl CodeBase {
             });
             output.split('\n').for_each(|l| println!("{}", l));
 
-            // let tmp = format!(
-            //     "./results/{}",
-            //     sf.file.display().to_string().split('/').last().unwrap()
-            // );
-
-            _ = std::fs::File::create(&sf.file).unwrap();
-            std::fs::write(&sf.file, output).unwrap();
+            // _ = std::fs::File::create(&sf.file).unwrap();
+            // std::fs::write(&sf.file, output).unwrap();
         }
     }
 }
@@ -252,7 +232,7 @@ impl RawSourceCode {
         PathBuf: From<P>,
         P: AsRef<Path> + Copy,
     {
-        let mut sc = RawSourceCode {
+        let mut raw_source_file = RawSourceCode {
             m: HashMap::new(),
             file: PathBuf::from(file),
             ident_locs: Vec::new(),
@@ -262,34 +242,35 @@ impl RawSourceCode {
         };
 
         //TODO: MPSC this.
-        if let Ok(lines) = read_lines(file) {
+        if let Ok(lines) = crate::read_lines(file) {
             lines
                 .collect::<Vec<_>>()
                 .iter()
                 .enumerate()
                 .for_each(|(e, l)| {
                     if let Ok(l) = l {
-                        let mut lm = RawLine {
+                        let mut raw_line = RawLine {
                             all_linked: Linked::Unprocessed,
-                            contents_modified: None,
                             contents_original: l.into(),
                             flavour: Flavour::Tasteless,
-                            hits: Vec::new(),
+                            idents: Vec::new(),
                             line_num: e,
                         };
-                        lm.find_docs();
-                        lm.find_idents();
-                        if lm.hits.len() > 0 {
-                            sc.named_idents.extend(lm.hits.iter().cloned())
+                        raw_line.find_docs();
+                        raw_line.find_idents();
+                        if raw_line.idents.len() > 0 {
+                            raw_source_file
+                                .named_idents
+                                .extend(raw_line.idents.iter().cloned())
                         }
-                        sc.m.insert(e, lm);
+                        raw_source_file.m.insert(e, raw_line);
                     }
                 });
         }
-        sc.total_lines = sc.m.len();
-        sc.named_idents.dedup();
-        sc.named_idents.retain(|x| x != ""); //TODO: can you initialise this better so avoid this?
-        sc
+        raw_source_file.total_lines = raw_source_file.m.len();
+        raw_source_file.named_idents.dedup();
+        raw_source_file.named_idents.retain(|x| x != ""); //TODO: can you initialise this better so avoid this?
+        raw_source_file
     }
 }
 
@@ -299,6 +280,7 @@ impl RawLine {
     fn should_be_modified(&self, i: &str) -> bool {
         if self.contents_original.contains(i)
             || self.contents_original.contains(&format!("{i}s"))
+            || self.contents_original.contains(&format!("{i}."))
             || self.contents_original.contains(&format!("{i}'s"))
                 && !self.contents_original.contains(&format!("`{}`", i))
                 && self.contents_original.contains("///")
@@ -309,10 +291,22 @@ impl RawLine {
     }
     /// Actually processes the modifications to a RawLine's contents_modified
     fn process_changes(&self, i: &str) -> String {
+        // Account for the `matches` call's not handling out-of-bounds
         let padded_i = format!(" {} ", i);
-        let padded_self = format!("{} ", self.contents_original);
-        let changes_to_make: Vec<&str> = padded_self.matches(&padded_i).collect();
+        let padded_self = format!(" {} ", self.contents_original);
+
+        // Account for abnormal docstring end chars like '.'
+        let mut changes_to_make: Vec<&str> = padded_self.matches(&padded_i).collect();
+        if changes_to_make.is_empty() {
+            changes_to_make = self.contents_original.matches(i).collect();
+        }
+
         let needle = &format!("[`{}`]", i);
+
+        dbg!(&padded_i);
+        dbg!(&padded_self);
+        dbg!(&changes_to_make);
+        dbg!(&needle);
 
         self.contents_original
             .clone()
@@ -321,6 +315,7 @@ impl RawLine {
     fn process(&mut self) {
         self.find_docs();
         self.find_idents();
+        self.idents.dedup();
     }
     //TODO: Make this DRY with a macro
     fn find_idents(&mut self) {
@@ -332,7 +327,7 @@ impl RawLine {
                         let cap = v.as_str().to_string();
                         trace!("{}::{}", self.line_num, cap);
                         self.flavour = Flavour::Declare;
-                        self.hits.push(cap);
+                        self.idents.push(cap);
                     }
                 })*
             };
@@ -353,7 +348,6 @@ impl RawLine {
         let text = self.contents_original.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
             if let Some(_) = caps.name("ident") {
-                //let docstring_type = v.as_str().to_string();
                 self.flavour = Flavour::Docstring;
             }
         }
@@ -372,49 +366,26 @@ mod tests {
     fn handle_imports() {
         let example = r#"
                         use anyhow::Result;
-                        use STKLR::search::utils::CodeBase;
+                        use STKLR::search::utils::SourceTree;
                         use STKLR::search::utils::RawSourceCode;
                         }"#;
 
-        let mut rl = RawLine {
-            all_linked: Linked::Unprocessed,
-            contents_modified: None,
+        let mut raw_line = RawLine {
             contents_original: example.into(),
-            flavour: Flavour::Tasteless,
-            hits: Vec::new(),
-            line_num: 0,
+            ..Default::default()
         };
-
-        rl.find_idents();
-        rl.hits.dedup();
-        assert_eq!(rl.hits.len(), 9);
-        let answers = [
-            "anyhow",
-            "STKLR",
-            "Result",
-            "search",
-            "utils",
-            "CodeBase",
-            "search",
-            "utils",
-            "RawSourceCode",
-        ];
-        rl.hits
-            .iter()
-            .enumerate()
-            .for_each(|(e, hit)| assert_eq!(answers[e], hit));
+        raw_line.process();
+        assert_eq!(raw_line.idents.len(), 9);
     }
     #[test]
     fn handle_lifetime_annotations() {
         let example = r#"async fn servitude<'a>(a: &'a str) -> bool{}"#;
-        let mut rl = RawLine {
-            contents_original: example.into(),
+        let mut raw_line = RawLine {
+            contents_original: example.to_string(),
             ..Default::default()
         };
-        rl.find_idents();
-        rl.hits.dedup();
-        assert_eq!(rl.hits.len(), 1);
-        assert_eq!(rl.hits[0], "servitude");
+        raw_line.process();
+        assert_eq!("servitude".to_string(), raw_line.idents[0])
     }
     #[test]
     fn handle_traits() {
@@ -423,57 +394,54 @@ mod tests {
         where P: Clone + Send + Sync {
         };
         }"#;
-        let mut rl = RawLine {
+        let mut raw_line = RawLine {
             contents_original: example.into(),
             ..Default::default()
         };
-        rl.find_idents();
-        rl.hits.dedup();
-        assert_eq!(rl.hits.len(), 2);
+        raw_line.process();
+        assert_eq!(raw_line.idents[1], "Bless");
+        assert_eq!(raw_line.idents[0], "bless");
     }
     #[test]
-    fn multi_edit_single_line() {
-        let cb = CodeBase::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-
-        cb.write_changes();
-    }
-
-    //TODO: work out this nonsense, with 'to' there's no function for that in there!
-    // Helper [`to`] return the x and y values from a given path
-
-    //TODO: you need a test for nested vec<T>s...
-    // * `range` a Vector<[`Mat`]> of the images you want to concat,...
-
-    #[test]
-    fn read_sourcecode() {
-        _ = RawSourceCode::new_from_file("src/main.rs");
-    }
-
-    #[test]
-    fn write_to_main() {
-        //let cb = CodeBase::new_from_cwd();
-        let cb: CodeBase = CodeBase {
-            source_files: {
-                glob("./src/main.rs")
-                    .unwrap()
-                    .filter_map(Result::ok)
-                    .map(|p| RawSourceCode::new_from_file(&p))
-                    .collect::<Vec<RawSourceCode>>()
-            },
-            named_idents: Vec::new(),
+    fn multi_matches_single_line() {
+        let example =
+            r#"a preview_changes to be linked, and another preview_changes here linked too."#;
+        let raw_line = RawLine {
+            contents_original: example.to_string(),
+            idents: vec!["preview_changes".into()],
+            ..Default::default()
         };
-
-        let cb = cb.populate_idents();
-        cb.write_changes();
+        let res = raw_line.process_changes(&raw_line.idents[0]);
+        let expected =
+            "a [`preview_changes`] to be linked, and another [`preview_changes`] here linked too.";
+        assert_eq!(expected, &res);
     }
     #[test]
-    fn show_matched_idents() {
-        for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
-            let p = path;
-            let rsc = RawSourceCode::new_from_file(&p);
-            if !rsc.named_idents.is_empty() {
-                dbg!(rsc.named_idents);
+    fn fullstop_after_ident() {
+        let example = r#"a preview_changes to the mighty SourceTree."#;
+        let mut raw_line = RawLine {
+            contents_original: example.to_string(),
+            idents: vec!["preview_changes".into(), "SourceTree".into()],
+            ..Default::default()
+        };
+        for id in raw_line.idents.iter() {
+            dbg!("loop", &id);
+            if raw_line.should_be_modified(id) {
+                raw_line.contents_original = raw_line.clone().process_changes(&id).to_string();
+                dbg!(&raw_line.contents_original);
             }
         }
     }
+    #[test]
+    fn ident_has_apos_s() {}
+
+    // fn show_matched_idents() {
+    //     for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
+    //         let p = path;
+    //         let rsc = RawSourceCode::new_from_file(&p);
+    //         if !rsc.named_idents.is_empty() {
+    //             dbg!(rsc.named_idents);
+    //         }
+    //     }
+    // }
 }
