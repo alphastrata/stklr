@@ -5,12 +5,19 @@ version = "0.0.1-alpha"
 edition = "2021"
 authors = ["jer <alphastrata@gmail.com>"]
 license = "MIT"
-description = "STKLR, pronounced 'stickler' is a cli tool to automatically link functions, enums, structs, traits etc in rust-doc docstrings. I couldn't this when I needed it, so, here we are..."
-homepage = "https://github.com/alphastrata"
+description = """
+STKLR: pronounced 'stickler'.
+Is a cli tool to automatically link functions, enums, structs, traits etc in rust-doc docstrings. I couldn't this when I needed it, so, here we are...
+"""
+homepage= "https://github.com/alphastrata/stklr.git"
 repository = "https://github.com/alphastrata/stklr.git"
 readme = "README.md"
-keywords = ["docs"]
+keywords = ["docs", "rust-doc", "regex", "grep", "egrep", "search", "pattern"]
+categories = ["command-line-utilities", "text-processing"]
 publish = true
+
+[[bin]]
+name = "stklr"
 
 [dependencies]
 anyhow = "1.0.65"

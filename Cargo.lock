@@ -6,6 +6,23 @@ version = 3
 name = "STKLR"
 version = "0.0.1-alpha"
 dependencies = [
+ "STKLR 0.0.1-alpha (registry+https://github.com/rust-lang/crates.io-index)",
+ "anyhow",
+ "chrono",
+ "clap",
+ "fern",
+ "glob",
+ "lazy_static",
+ "log",
+ "regex",
+]
+
+[[package]]
+name = "STKLR"
+version = "0.0.1-alpha"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d4865a89d23dde850835116ec794275593d4e0c0cef7f7a07f57d8831d75369"
+dependencies = [
  "anyhow",
  "chrono",
  "clap",
