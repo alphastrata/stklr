@@ -38,7 +38,7 @@ pub struct RawLine {
     pub source_file: PathBuf,
 }
 
-#[derive(Default, Debug, Clone, Hash)]
+#[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Hash)]
 pub struct AdjustedLine {
     pub line_num: usize,
     pub contents: String,
@@ -288,7 +288,9 @@ impl RawLine {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
+
     #[test]
     fn trial_on_source() {
         let t1 = std::time::Instant::now();
@@ -297,9 +299,27 @@ mod tests {
         for rsc in st.source_files.iter() {
             //rsc.make_adjustments(&rsc.named_idents);
             info!("{}", rsc.file.display());
-            rsc.make_adjustments(&rsc.named_idents)
-                .iter()
-                .for_each(|al| info!("{}", al));
+            let new_m = rsc
+                .make_adjustments(&rsc.named_idents)
+                .into_iter()
+                .map(|adj| (adj.line_num, adj.contents))
+                .collect::<HashMap<usize, String>>();
+
+            let output = (0..rsc.total_lines)
+                .into_iter()
+                .map(|n| -> String {
+                    if let Some(new) = new_m.get(&n) {
+                        new.to_owned()
+                    } else {
+                        rsc.get(&n).unwrap().contents.to_owned()
+                    }
+                })
+                .collect::<Vec<String>>();
+            let tmp_path = format!(
+                "results/{}",
+                &rsc.file.display().to_string().split("/").last().unwrap()
+            );
+            _ = std::fs::write(&tmp_path, output.join("\n"));
         }
 
         info!(
