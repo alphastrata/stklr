@@ -11,7 +11,7 @@ Is a cli tool to automatically link functions, enums, structs, traits etc in rus
 homepage= "https://github.com/alphastrata/stklr.git"
 repository = "https://github.com/alphastrata/stklr.git"
 readme = "README.md"
-keywords = ["docs", "rust-doc", "regex", "grep", "egrep", "search", "pattern"]
+keywords = ["docs", "rust-doc", "sed", "search", "pattern"]
 categories = ["command-line-utilities", "text-processing"]
 publish = true
 
