@@ -1,7 +1,6 @@
 [package]
-#name = "stklr"
 name = "STKLR"
-version = "0.0.1-alpha"
+version = "0.0.1-beta"
 edition = "2021"
 authors = ["jer <alphastrata@gmail.com>"]
 license = "MIT"
@@ -18,6 +17,7 @@ publish = true
 
 [[bin]]
 name = "stklr"
+path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.65"
