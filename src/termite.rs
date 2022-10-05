@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use log::{debug, error, info, trace, warn};
 
 pub fn setup_logger() -> Result<(), fern::InitError> {

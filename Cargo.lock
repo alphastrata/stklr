@@ -3,27 +3,6 @@
 version = 3
 
 [[package]]
-name = "STKLR"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "chrono",
- "clap 4.0.9",
- "crossbeam",
- "fern",
- "glob",
- "lazy_static",
- "log",
- "quote",
- "rayon",
- "regex",
- "ripgrep",
- "syn",
- "termcolor",
- "thiserror",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -722,6 +701,27 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "stklr"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap 4.0.9",
+ "crossbeam",
+ "fern",
+ "glob",
+ "lazy_static",
+ "log",
+ "quote",
+ "rayon",
+ "regex",
+ "ripgrep",
+ "syn",
+ "termcolor",
+ "thiserror",
 ]
 
 [[package]]

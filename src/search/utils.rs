@@ -75,10 +75,7 @@ impl SourceTree {
     /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
-            source_files: paths
-                .iter()
-                .map(|p| RawSourceCode::new_from_file(p))
-                .collect(),
+            source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
             named_idents: Vec::new(),
         }
         .populate_idents()
@@ -111,11 +108,11 @@ impl SourceTree {
     }
     /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a [`path`] of
     /// the same name, line-by-line.
-    pub fn write_changes(file: PathBuf, changes: &mut Vec<AdjustedLine>, write_flag: bool) {
+    pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
         changes.sort_by(|a, b| a.line_num.cmp(&b.line_num));
         let output: Vec<String> = changes
-            .into_iter()
+            .iter_mut()
             .map(|adj_line| adj_line.contents.to_owned())
             .collect();
 
@@ -218,7 +215,6 @@ impl RawSourceCode {
     }
 }
 
-//-------
 impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
@@ -239,7 +235,7 @@ impl RawLine {
         }
         false
     }
-    /// Actually [`process`] the modifications to a [`RawLine`] contents_modified
+    /// Actually process the modifications to a [`RawLine`] contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             let split_n_proc = &self
@@ -259,20 +255,17 @@ impl RawLine {
         }
         self
     }
-    // /// Process a [`RawLine`] by finding any idents, or docs that may be in there.
-    // // NOTE: these are controlled by regexes in ./src/search/consts.rs
-    // fn process(&mut self) {
-    //     self.find_docs();
-    //     self.find_idents();
-    //     self.idents.dedup();
-    // }
+    /// Finds the things we're interested in.
     fn find_idents(&mut self) {
         let text = self.contents.to_owned();
+
+        // DRYness, is goodness.
         macro_rules! generate_ident_find_loops {
             ($($CONST:ident),*) => {
                 $(for caps in $CONST.captures_iter(&text) {
                     if let Some(v) = caps.name("ident") {
                         let cap = v.as_str().to_string();
+                        //TODO: You've got more flavours, use them...
                         self.flavour = Flavour::Declare;
                         debug!("{} added to caps.", cap);
                         self.idents.push(cap);
@@ -280,6 +273,8 @@ impl RawLine {
                 })*
             };
         }
+
+        // generate a matcher for all of these.
         generate_ident_find_loops!(
             RUST_FN,
             RUST_TY,
@@ -291,8 +286,9 @@ impl RawLine {
         );
     }
 
-    /// Process preview_changes [`RawSourceCode`] [`find_docs`]
+    /// Find and classify docstrings.
     // NOTE: also regex controlled, see ./src/search/consts.rs
+    // TODO: add support for '//!' module docstrings.
     fn find_docs(&mut self) {
         let text = self.contents.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
@@ -305,7 +301,6 @@ impl RawLine {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
 
     #[test]
@@ -346,78 +341,3 @@ mod tests {
         );
     }
 }
-
-// DEAD TESTS.
-// #[test]
-// fn handle_imports() {
-//     let example = r#"
-//                     use anyhow::Result;
-//                     use STKLR::search::utils::SourceTree;
-//                     use STKLR::search::utils::RawSourceCode;
-//                     }"#;
-//
-//     let mut raw_line = RawLine {
-//         contents: example.into(),
-//         ..Default::default()
-//     };
-//     raw_line.process();
-//     assert_eq!(raw_line.idents.len(), 9);
-// }
-// #[test]
-// fn handle_lifetime_annotations() {
-//     let example = r#"async fn servitude<'a>(a: &'a str) -> bool{}"#;
-//     let mut raw_line = RawLine {
-//         contents: example.to_string(),
-//         ..Default::default()
-//     };
-//     raw_line.process();
-//     assert_eq!("servitude".to_string(), raw_line.idents[0])
-// }
-//#[test]
-//fn handle_traits() {
-//    let example = r#"pub trait Bless {
-//    fn bless(&P) -> Blessing
-//    where P: Clone + Send + Sync {
-//    };
-//    }"#;
-//    let mut raw_line = RawLine {
-//        contents: example.into(),
-//        ..Default::default()
-//    };
-//    raw_line.process();
-//    assert_eq!(raw_line.idents[1], "Bless");
-//    assert_eq!(raw_line.idents[0], "bless");
-//}
-//#[test]
-//fn multi_matches_single_line() {
-//    let example =
-//        r#"a preview_changes to be linked, and another preview_changes here linked too."#;
-//    let raw_line = RawLine {
-//        contents: example.to_string(),
-//        idents: vec!["preview_changes".into()],
-//        ..Default::default()
-//    };
-
-//    let expected =
-//        "a [`preview_changes`] to be linked, and another [`preview_changes`] here linked too.";
-//}
-// #[test]
-// fn fullstop_after_ident() {
-//     let example = r#"a preview_changes to the mighty SourceTree."#;
-//     let mut raw_line = RawLine {
-//         contents: example.to_string(),
-//         idents: vec!["preview_changes".into(), "SourceTree".into()],
-//         ..Default::default()
-//     };
-// }
-// #[test]
-// fn ident_has_apos_s() {}
-// fn show_matched_idents() {
-//     for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
-//         let p = path;
-//         let rsc = RawSourceCode::new_from_file(&p);
-//         if !rsc.named_idents.is_empty() {
-//             dbg!(rsc.named_idents);
-//         }
-//     }
-// }

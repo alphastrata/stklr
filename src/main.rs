@@ -2,8 +2,8 @@
 //
 //! STKLR
 //
-use STKLR::search::utils::SourceTree;
-use STKLR::termite;
+use stklr::search::utils::SourceTree;
+use stklr::termite;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -54,7 +54,7 @@ fn main() {
 fn run_report(_paths: &Option<Vec<String>>) -> Result<()> {
     Ok(())
 }
-//
+// TODO: break this up.
 fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
     let t1 = std::time::Instant::now();
 
@@ -68,6 +68,7 @@ fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
 
     //NOTE: maybe par iter..?
     for rsc in st.source_files.iter() {
+        debug!("Running {}", rsc.file.display());
         if !cli.quiet {
             println!("Processing: {}", rsc.file.display());
         }
@@ -98,14 +99,10 @@ fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
                 output.iter().for_each(|i| println!("{i}"))
             }
         }
-
-        if !cli.quiet {
-            println!("Completed in {}s\n", t1.elapsed().as_secs_f64())
-        }
     }
 
     println!(
-        "{} FILES IN: {}s",
+        "COMPLETE!\n{} FILES IN: {}s",
         st.source_files.len(),
         t1.elapsed().as_secs_f64()
     );
