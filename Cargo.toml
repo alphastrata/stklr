@@ -2,7 +2,7 @@
 name = "STKLR"
 version = "0.0.1"
 edition = "2021"
-authors = ["alphastrata <alphastrata@gmail.com>"]
+authors = ["jer <alphastrata@gmail.com>"]
 license = "MIT"
 description = "STKLR, pronounced 'stickler' is a cli tool to automatically link functions, enums, structs, traits etc in rust-doc docstrings."
 homepage = "https://github.com/alphastrata"
@@ -26,3 +26,4 @@ thiserror = "1.0.37"
 log = "*"
 fern="*"
 chrono = "0.4.22"
+clap = { version = "4.0.9", features = ["derive"] }
