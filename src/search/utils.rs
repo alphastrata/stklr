@@ -1,11 +1,9 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
-
 use super::consts::*;
 use crate::termite;
 
 use core::fmt::Display;
 use glob::glob;
+#[allow(unused_imports)]
 use log::{debug, error, info, trace, warn};
 use std::collections::HashMap;
 use std::fs;
@@ -13,10 +11,6 @@ use std::hash::Hash;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::path::{Path, PathBuf};
-use std::sync::mpsc;
-use std::sync::mpsc::Sender;
-use std::sync::{Arc, Mutex};
-use std::thread;
 
 #[derive(Default, Debug, Clone, Hash)]
 pub enum Linked {
@@ -104,13 +98,8 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// makes adjustments to RawLines from within RawSourceCode's RawLines
-    fn make_adjustments(&self) {
-        // self.source_files.iter().for_each(|sf| {
-        //     sf.file, changes
-        // })
-    }
-
+    /// Commits changes to disk, essentially writing the `Vec<AdjustedLine>` back to a file_path of
+    /// the same name, line-by-line.
     pub fn write_changes(file: PathBuf, changes: &mut Vec<AdjustedLine>, write_flag: bool) {
         changes.sort_by(|a, b| a.line_num.cmp(&b.line_num));
         let output: Vec<String> = changes
@@ -137,16 +126,6 @@ impl Display for RawLine {
     }
 }
 
-#[derive(Default, Debug, Clone)]
-pub struct RawSourceCode {
-    pub m: HashMap<usize, RawLine>,
-    pub file: PathBuf,
-    pub ident_locs: Vec<usize>,
-    pub doc_locs: Vec<usize>,
-    pub total_lines: usize,
-    pub named_idents: Vec<String>,
-}
-
 impl Deref for RawSourceCode {
     type Target = HashMap<usize, RawLine>;
     fn deref(&self) -> &Self::Target {
@@ -157,6 +136,16 @@ impl DerefMut for RawSourceCode {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.m
     }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct RawSourceCode {
+    pub m: HashMap<usize, RawLine>,
+    pub file: PathBuf,
+    pub ident_locs: Vec<usize>,
+    pub doc_locs: Vec<usize>,
+    pub total_lines: usize,
+    pub named_idents: Vec<String>,
 }
 
 impl RawSourceCode {
@@ -204,6 +193,8 @@ impl RawSourceCode {
         raw_source_file
     }
 
+    /// Checks whether `self` [`should_be_modified`] and if so, [`process_changes`] from the passed
+    /// `idents` is called.
     fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         idents
             .iter()
@@ -248,11 +239,6 @@ impl RawLine {
         }
 
         let needle = &format!("[`{}`]", i);
-
-        dbg!(&padded_i);
-        dbg!(&padded_self);
-        dbg!(&changes_to_make);
-        dbg!(&needle);
 
         self.contents = self
             .contents
