@@ -91,6 +91,7 @@ impl SourceTree {
                 glob(&search_path)
                     .unwrap()
                     .filter_map(Result::ok)
+                    .filter(|f| !f.display().to_string().contains("target"))
                     .map(|p| RawSourceCode::new_from_file(&p))
                     .collect::<Vec<RawSourceCode>>()
             },

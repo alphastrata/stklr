@@ -1,67 +1,32 @@
-[2022-10-05][14:37:39][INFO][STKLR::termite][21] Logger setup complete.
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/cvutils.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 60:  /// Wrapping OpenCV's array/matrix based concats, to build disks from [`LocalTile`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 84:  /// Wrapping OpenCV's array/matrix based concat but taking a native cpp vector of [`Mat`] as opporesed to a rust Vec. (see: [`cv_concat_array`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 96:  /// Retrieve the (width, height) of an image from its [`path`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 15:  /// * `&str` [`path`] to load image from
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 26:  /// * `m: [`HashMap`] [`LocalTile`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 62:  /// * `v` a [`Vector`] which represent a tile on disk you're looking to concatenate.
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 87:  /// * `hwdt` the [`HimawariDatetime`] used to create all the tiles this img will be made up of
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 13:  /// load image with [`opencv`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 86:  /// * `range` a [`Vector`] of the images you want to concat, NOTE: this is the cpp wrapped [`Vector`] not the rust one
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 27:  /// * `hwdt` the [`HimawariDatetime`] used to create all the tiles the disc will be made up of
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 21:  /// it calls [`cv_concat_array`] which, could do vertical or horizontal, vertical is preferred to ensure the way the CPP [`Vector`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/fileutils.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 50:  /// Returns true if the file/directory [`exists`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/himawaridt.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 85:  /// Constructs a [`HimawariDatetime`] closest to your current time, minus 20 [`minutes`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 10:  /// used to generate filenames and [`url`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 98:  /// * `hmtd` - a valid [`HimawariDatetime`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 20:  /// Constructs a [`HimawariDatetime`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 96:  /// builds valid [`url`] for tiles from [`HimawariDatetime`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/lib.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/main.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/tiles.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 26:  /// Use the [`io`] [`time`] [`to`] fetch tiles in green [`thread`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 164:  /// Constructs a [`new`] [`RemoteTile`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 31:  /// * `client` - [`Client`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 32:  /// * `handles` a [`Result`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 179:  /// Downloads the tile [`to`] the specified [`path`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 73:  /// Builds a hashmap of [`LocalTile`] where the key is the x,y coordinate of the tile.
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 29:  /// * `rt` [`RemoteTile`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 151:  /// A getter for the x, and y values representing the tile's [`io`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 116:  /// Identical [`to`] the [`RemoteTile`] except that this one exists on disk.
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 90:  /// A helper [`to`] fetch an entire disc's worth of tiles.
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 93:  /// * `client` - [`Client`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 181:  /// * `hmtd` - a [`time`] struct
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 94:  /// * `hmtd` - a valid [`time`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 182:  /// * `client` - [`Client`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 30:  /// * `hmtd` - a valid [`time`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 51:  /// Helper [`to`] return the x and y values from a given [`path`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/user_config.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 10:  /// [`Config`] holds all the [`info`] a user will need to populate their yaml file with in order to
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][299] /media/jer/ARCHIVE/scrapers/rustwari/src/wallpaperutils.rs
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 42:  /// When called on [`FullDisc`] it resizes the 121MP .png to a smaller jpeg
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 9:  /// Representing a full, 121MP [`image`]
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][303] 31:  /// Sets the current [`wallpaper`] to whatever's stored in the [`path`] field.
-[2022-10-05][14:37:39][INFO][STKLR::search::utils::tests][306] 8 FILES IN: 0.086044701s
-[2022-10-05][14:58:33][INFO][STKLR::termite][21] Logger setup complete.
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/cvutils.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/fileutils.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/himawaridt.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/lib.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/main.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/tiles.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/user_config.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/wallpaperutils.rs
-[2022-10-05][14:58:33][INFO][STKLR::search::utils::tests][322] 8 FILES IN: 0.084888551s
-[2022-10-05][14:58:42][INFO][STKLR::termite][21] Logger setup complete.
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/cvutils.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/fileutils.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/himawaridt.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/lib.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/main.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/tiles.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/user_config.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/wallpaperutils.rs
-[2022-10-05][14:58:42][INFO][STKLR::search::utils::tests][322] 8 FILES IN: 0.108240231s
+[2022-10-05][15:04:07][INFO][STKLR::termite][21] Logger setup complete.
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/cvutils.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/fileutils.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/himawaridt.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/lib.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/main.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/tiles.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/user_config.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][301] /media/jer/ARCHIVE/scrapers/rustwari/src/wallpaperutils.rs
+[2022-10-05][15:04:08][INFO][STKLR::search::utils::tests][325] 8 FILES IN: 0.082901615s
+[2022-10-05][15:11:10][INFO][STKLR::termite][21] Logger setup complete.
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/cvutils.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/fileutils.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/himawaridt.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/lib.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/main.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/termite.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/tiles.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/user_config.rs
+[2022-10-05][15:11:11][INFO][STKLR][18] /media/jer/ARCHIVE/scrapers/rustwari/src/wallpaperutils.rs
+[2022-10-05][15:11:11][INFO][STKLR][42] 9 FILES IN: 0.189482201s
+[2022-10-05][15:36:54][INFO][STKLR::termite][21] Logger setup complete.
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/cvutils.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/fileutils.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/himawaridt.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/lib.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/main.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/termite.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/tiles.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/user_config.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][303] /media/jer/ARCHIVE/scrapers/rustwari/src/wallpaperutils.rs
+[2022-10-05][15:36:54][INFO][STKLR::search::utils::tests][327] 9 FILES IN: 0.449168826s
