@@ -106,7 +106,9 @@ impl SourceTree {
     }
     /// makes adjustments to RawLines from within RawSourceCode's RawLines
     fn make_adjustments(&self) {
-        self.source_files.iter().for_each(|sf| {})
+        // self.source_files.iter().for_each(|sf| {
+        //     sf.file, changes
+        // })
     }
 
     pub fn write_changes(file: PathBuf, changes: &mut Vec<AdjustedLine>, write_flag: bool) {
@@ -247,18 +249,18 @@ impl RawLine {
 
         let needle = &format!("[`{}`]", i);
 
-        //        dbg!(&padded_i);
-        //        dbg!(&padded_self);
-        //        dbg!(&changes_to_make);
-        //        dbg!(&needle);
-        //
+        dbg!(&padded_i);
+        dbg!(&padded_self);
+        dbg!(&changes_to_make);
+        dbg!(&needle);
+
         self.contents = self
             .contents
             .clone()
             .replacen(i, needle, changes_to_make.len());
         self
     }
-    fn process(&mut self) {
+    pub fn process(&mut self) {
         self.find_docs();
         self.find_idents();
         self.idents.dedup();
@@ -371,8 +373,11 @@ mod tests {
     #[test]
     fn trial_on_this_source() {
         let st = SourceTree::new_from_cwd();
-        _ = st.source_files.iter();
-        //.map(|rsc| SourceTree::write_changes(rsc, false);).collect::<Vec<()>();
+        for rsc in st.source_files.iter() {
+            rsc.make_adjustments(&rsc.named_idents)
+                .iter()
+                .for_each(|al| println!("{}", al))
+        }
     }
 
     #[test]
@@ -393,7 +398,6 @@ mod tests {
     }
     #[test]
     fn ident_has_apos_s() {}
-
     // fn show_matched_idents() {
     //     for path in glob("./**/*.rs").unwrap().filter_map(Result::ok) {
     //         let p = path;
@@ -404,56 +408,3 @@ mod tests {
     //     }
     // }
 }
-//     // Adjustment thread -> sends to builder thread
-//     let tsrsc = self.clone();
-//     let (tx_adj_2_build, rx_build) = mpsc::channel();
-//     let tx_adj_c = tx_adj_2_build.clone();
-//     let adjust_t = thread::spawn(move || tsrsc.make_adjustments(tx_adj_c));
-//
-//     // Builder thread -> sends to writer
-//     let (tx_build, rx_writer) = mpsc::channel();
-//
-//     // THE RX_BUILD gets values here, from tsrsc.make_adjustments(tx_c)
-//     let builder_t = thread::spawn(move || {
-//         let mut sf_hm: HashMap<String, Vec<AdjustedLine>> = HashMap::new();
-//         while let Ok((rl, filepath)) = rx_build.recv() {
-//             sf_hm.entry(filepath).and_modify(|v| v.push(rl.into()));
-//             dbg!("PUSH");
-//         }
-//         tx_build
-//             .send(sf_hm)
-//             .expect("unable to send complete sf_hm to writer!");
-//         dbg!("SF_HM GONE");
-//     });
-//
-//     if let Ok(_) = adjust_t.join() {
-//         drop(tx_adj_2_build);
-//     }
-//
-//     if let Ok(_) = builder_t.join() {
-//         // ALL THE LINES ARE IN SF_HM
-//     }
-//
-//     // THE WRITER thread is actually *this* one, the main one.
-//     while let Ok(sf_hm) = rx_writer.recv() {
-//         // sf_hm is a hashmap of filepath, adjusted_line
-//         dbg!(&sf_hm);
-//
-//         sf_hm.iter().for_each(|(sf_path, v)| {
-//             let mut output: Vec<&str> = Vec::new();
-//             for (e, _) in v.iter().enumerate() {
-//                 let current = &v[e];
-//                 println!("{}::{}", &current.line_num, &current.contents_original);
-//
-//                 output.push(&current.contents_original)
-//             }
-//
-//             if write_flag {
-//                 fs::write(&sf_path, output.join("\n"))
-//                     .expect("problem writing output to filepath")
-//             } else {
-//                 output.iter().for_each(|e| println!("{}", e));
-//             }
-//         });
-//     }
-// }
