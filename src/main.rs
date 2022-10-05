@@ -2,8 +2,8 @@
 //
 //! STKLR
 //
-use stklr::search::utils::SourceTree;
-use stklr::termite;
+use STKLR::search::utils::SourceTree;
+use STKLR::termite;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};

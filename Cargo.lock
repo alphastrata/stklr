@@ -3,6 +3,20 @@
 version = 3
 
 [[package]]
+name = "STKLR"
+version = "0.0.1-alpha"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap",
+ "fern",
+ "glob",
+ "lazy_static",
+ "log",
+ "regex",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -287,20 +301,6 @@ name = "regex-syntax"
 version = "0.6.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
-
-[[package]]
-name = "stklr"
-version = "0.0.1-alpha"
-dependencies = [
- "anyhow",
- "chrono",
- "clap",
- "fern",
- "glob",
- "lazy_static",
- "log",
- "regex",
-]
 
 [[package]]
 name = "strsim"
