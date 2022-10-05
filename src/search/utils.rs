@@ -117,7 +117,7 @@ impl SourceTree {
 
 impl Display for AdjustedLine {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", &self.line_num, &self.contents)
+        write!(f, "{}: {}", &self.line_num, &self.contents,)
     }
 }
 impl Display for RawLine {
@@ -215,12 +215,13 @@ impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process_changes`]
     fn should_be_modified(&self, i: &str) -> bool {
-        if matches!(self.flavour, Flavour::Docstring) && self.contents.contains(i)
+        if matches!(self.flavour, Flavour::Docstring)
+            && self.contents.contains(i)
+            && !self.contents.contains(&format!("`{}`", i))
             || self.contents.contains(&format!("{i}s"))
             || self.contents.contains(&format!("{i}."))
             || self.contents.contains(&format!("{i}'s"))
-                && !self.contents.contains(&format!("`{}`", i))
-                && self.contents.contains("///")
+        //&& self.contents.contains("///")
         {
             return true;
         }
@@ -290,11 +291,7 @@ impl RawLine {
 
 #[cfg(test)]
 mod tests {
-    use super::Flavour;
-    use super::RawSourceCode;
     use super::*;
-    use anyhow::Result;
-    use glob::glob;
 
     #[test]
     fn handle_imports() {
@@ -365,7 +362,6 @@ mod tests {
                 .for_each(|al| println!("{}", al))
         }
     }
-
     #[test]
     fn fullstop_after_ident() {
         let example = r#"a preview_changes to the mighty SourceTree."#;
