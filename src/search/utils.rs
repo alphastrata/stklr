@@ -34,7 +34,7 @@ pub struct RawLine {
     pub all_linked: Linked,
     pub contents: String,
     pub flavour: Flavour,
-    pub idents: Vec<String>, //NOTE: expended data (exists temporarily to populate the SourceCode struct(s))
+    pub idents: Vec<String>,
     pub source_file: PathBuf,
 }
 
@@ -195,7 +195,7 @@ impl RawSourceCode {
 
     /// Checks whether `self` [`should_be_modified`] and if so, [`process_changes`] from the passed
     /// `idents` is called.
-    fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
+    pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
             .iter()
             .filter(|(_, raw_line)| raw_line.should_be_modified(idents))
@@ -227,24 +227,6 @@ impl RawLine {
     }
     /// Actually processes the modifications to a RawLine's contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
-        // // Account for the `matches` call's not handling out-of-bounds
-        // let padded_i = format!(" {} ", i);
-        // let padded_self = format!(" {} ", self.contents);
-        //
-        // // Account for abnormal docstring end chars like '.'
-        // let mut changes_to_make: Vec<&str> = padded_self.matches(&padded_i).collect();
-        // if changes_to_make.is_empty() {
-        //     changes_to_make = self.contents.matches(i).collect();
-        // }
-        //
-        // let needle = &format!("[`{}`]", i);
-        //
-        // self.contents = self
-        //     .contents
-        //     .clone()
-        //     .replacen(i, needle, changes_to_make.len());
-        // self
-        ////v2:
         for id in idents {
             let split_n_proc = &self
                 .contents
@@ -261,12 +243,13 @@ impl RawLine {
         }
         self
     }
-    pub fn process(&mut self) {
+    /// Process a RawLine, by finding any idents, or docs that may be in there.
+    // NOTE: these are controlled by regexes in ./src/search/consts.rs
+    fn process(&mut self) {
         self.find_docs();
         self.find_idents();
         self.idents.dedup();
     }
-    //TODO: Make this DRY with a macro
     fn find_idents(&mut self) {
         let text = self.contents.to_owned();
         macro_rules! generate_ident_find_loops {
@@ -274,7 +257,6 @@ impl RawLine {
                 $(for caps in $CONST.captures_iter(&text) {
                     if let Some(v) = caps.name("ident") {
                         let cap = v.as_str().to_string();
-                        //trace!("{}::{}", self.line_num, cap);
                         self.flavour = Flavour::Declare;
                         self.idents.push(cap);
                     }
@@ -293,6 +275,7 @@ impl RawLine {
     }
 
     /// Process preview_changes RawSourceCode [`find_docs`]
+    // NOTE: also regex controlled, see ./src/search/consts.rs
     fn find_docs(&mut self) {
         let text = self.contents.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
