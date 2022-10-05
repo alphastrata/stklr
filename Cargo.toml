@@ -1,6 +1,6 @@
 [package]
-name = "stklr"
-#name = "STKLR"
+#name = "stklr"
+name = "STKLR"
 version = "0.0.1-alpha"
 edition = "2021"
 authors = ["jer <alphastrata@gmail.com>"]
