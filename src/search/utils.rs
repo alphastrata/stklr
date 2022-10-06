@@ -1,5 +1,6 @@
 use super::consts::*;
 
+use ansi_term::Colour;
 use core::fmt::Display;
 use glob::glob;
 use log::debug;
@@ -188,18 +189,16 @@ impl RawSourceCode {
                         };
                         raw_line.find_docs();
                         raw_line.find_idents();
-                        if raw_line.idents.is_empty() {
-                            raw_source_file
-                                .named_idents
-                                .extend(raw_line.idents.iter().cloned())
-                        }
+                        raw_source_file
+                            .named_idents
+                            .extend(raw_line.idents.iter().cloned());
                         raw_source_file.m.insert(e, raw_line);
                     }
                 });
         }
         raw_source_file.total_lines = raw_source_file.m.len();
         raw_source_file.named_idents.dedup();
-        raw_source_file.named_idents.retain(|x| !x.is_empty());
+        raw_source_file.named_idents.retain(|x| x != "");
         raw_source_file
     }
 
@@ -244,6 +243,7 @@ impl RawLine {
                 .map(|sp| {
                     if sp.contains(id) {
                         debug!("{} found in: {}", id, sp);
+                        let id = format!("{}", Colour::Green.paint(id));
                         format!(" [`{}`]", id)
                     } else {
                         debug!("No change to: {} ", sp);
@@ -267,8 +267,9 @@ impl RawLine {
                         let cap = v.as_str().to_string();
                         //TODO: You've got more flavours, use them...
                         self.flavour = Flavour::Declare;
-                        debug!("{} added to caps.", cap);
-                        self.idents.push(cap);
+                        if cap != ""{
+                            self.idents.push(cap.clone());
+                        }
                     }
                 })*
             };
@@ -302,6 +303,7 @@ impl RawLine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ansi_term::Colour;
 
     #[test]
     fn trial_on_source() {
@@ -323,10 +325,12 @@ mod tests {
                     if let Some(new) = new_m.get(&n) {
                         new.to_owned()
                     } else {
-                        rsc.get(&n).unwrap().contents.to_owned()
+                        let new = rsc.get(&n).unwrap().contents.to_owned();
+                        new
                     }
                 })
                 .collect::<Vec<String>>();
+
             let tmp_path = format!(
                 "results/{}",
                 &rsc.file.display().to_string().split("/").last().unwrap()

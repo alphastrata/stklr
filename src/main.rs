@@ -2,12 +2,14 @@
 //
 //! STKLR
 //
+use ansi_term::Colour;
+use STKLR::green;
+use STKLR::red;
 use STKLR::search::utils::SourceTree;
 use STKLR::termite;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use log::debug;
 use std::collections::HashMap;
 
 #[derive(Parser, Debug)]
@@ -45,8 +47,8 @@ fn main() {
 
     _ = match &cli.command {
         Commands::Report { path } => run_report(path),
-        Commands::Preview { path } => run(path, &cli, false),
-        Commands::Fix { path } => run(path, &cli, true),
+        Commands::Preview { path } => run(path, &cli, false, true),
+        Commands::Fix { path } => run(path, &cli, true, false),
     };
 }
 // TODO: what even is this?
@@ -54,8 +56,8 @@ fn main() {
 fn run_report(_paths: &Option<Vec<String>>) -> Result<()> {
     Ok(())
 }
-// TODO: break this up.
-fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
+// TODO: break this up. run_report, Preview, Fix
+fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool, preview: bool) -> Result<()> {
     let t1 = std::time::Instant::now();
 
     let st = {
@@ -68,9 +70,11 @@ fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
 
     //NOTE: maybe par iter..?
     for rsc in st.source_files.iter() {
-        debug!("Running {}", rsc.file.display());
         if !cli.quiet {
-            println!("Processing: {}", rsc.file.display());
+            println!(
+                "\nProcessing: {}",
+                Colour::Blue.paint(rsc.file.display().to_string())
+            );
         }
         let new_m = rsc
             .make_adjustments(&rsc.named_idents)
@@ -79,14 +83,20 @@ fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
             // to ignore the fact the adjusted lines come back out-of-order
             .collect::<HashMap<usize, String>>();
 
-        // use the indexes of the lines as ground-truth, unchanged since ingest
         let output = (0..rsc.total_lines)
             .into_iter()
             .map(|n| -> String {
                 if let Some(new) = new_m.get(&n) {
+                    if !cli.quiet {
+                        green!(new, n);
+                    }
                     new.to_owned()
                 } else {
-                    rsc.get(&n).unwrap().contents.to_owned()
+                    let new = rsc.get(&n).unwrap().contents.to_owned();
+                    if !cli.quiet {
+                        red!(new, n);
+                    }
+                    new
                 }
             })
             .collect::<Vec<String>>();
@@ -94,15 +104,13 @@ fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool) -> Result<()> {
         // Write each file
         if write_mode {
             _ = std::fs::write(&rsc.file, output.join("\n"));
-            debug!("Write successful!");
-            if !cli.quiet {
-                output.iter().for_each(|i| println!("{i}"))
-            }
+        } else if !cli.quiet {
+            //TODO: pretty print
         }
     }
 
     println!(
-        "COMPLETE!\n{} FILES IN: {}s",
+        "\n\nCOMPLETE!\n{} FILES IN: {}s",
         st.source_files.len(),
         t1.elapsed().as_secs_f64()
     );
