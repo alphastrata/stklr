@@ -1,6 +1,5 @@
 use super::consts::*;
 
-use ansi_term::Colour;
 use core::fmt::Display;
 use glob::glob;
 use log::debug;
@@ -70,7 +69,6 @@ impl SourceTree {
                 self.named_idents.push(e.to_string())
             });
         });
-        //dbg!("Idents populated.");
         self
     }
     /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
@@ -89,7 +87,6 @@ impl SourceTree {
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
-        //dbg!(&path);
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
     /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
@@ -98,7 +95,6 @@ impl SourceTree {
         P: Display + AsRef<Path>,
     {
         let search_path = format!("{}/**/*.rs", dir);
-        //dbg!(&search_path);
         SourceTree {
             source_files: {
                 glob(&search_path)
@@ -204,7 +200,6 @@ impl RawSourceCode {
         raw_source_file.total_lines = raw_source_file.m.len();
         raw_source_file.named_idents.dedup();
         raw_source_file.named_idents.retain(|x| x != "");
-        //dbg!(&raw_source_file.named_idents);
         raw_source_file
     }
 
@@ -234,7 +229,6 @@ impl RawLine {
                     || self.contents.contains(&format!("{}.", i))
                     || self.contents.contains(&format!("{}'s", i)) && self.contents.contains("///")
                 {
-                    //dbg!(&i);
                     return true;
                 }
             }
@@ -309,14 +303,13 @@ impl RawLine {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ansi_term::Colour;
 
     #[test]
     fn trial_on_source() {
         let t1 = std::time::Instant::now();
 
-        //let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-        let st = SourceTree::new_from_cwd();
+        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+        //let st = SourceTree::new_from_cwd();
         for rsc in st.source_files.iter() {
             //rsc.make_adjustments(&rsc.named_idents);
             debug!("{}", rsc.file.display());

@@ -1,18 +1,6 @@
-#[cfg(test)]
-mod tests {
-    use ansi_term::Colour::{Blue, Yellow};
-
-    #[test]
-    fn colour_tests() {
-        println!(
-            "Demonstrating {} and {}!",
-            Blue.bold().paint("blue bold"),
-            Yellow.underline().paint("yellow underline")
-        );
-
-        println!("Yellow on blue: {}", Yellow.on(Blue).paint("wow!"))
-    }
-}
+//!
+//! Macros for easier-coloured pretty printing.
+//!
 
 /// Generates the printers so that RawLine(s) when being processed can get pretty-printed when
 /// using Preview or Verbose modes.
@@ -32,3 +20,7 @@ macro_rules! red {
         print!("{} \n", coloured);
     }};
 }
+
+
+//TODO: put all the printers you want into a single macro.
+//TODO: use macros in the Display for AdjustedLine and RawLine.
