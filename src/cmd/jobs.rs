@@ -49,11 +49,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
             })
             .collect::<Vec<String>>();
 
-        let tmp_path = format!(
-            "results/{}",
-            &rsc.file.display().to_string().split("/").last().unwrap()
-        );
-        _ = std::fs::write(&tmp_path, output.join("\n"));
+        _ = std::fs::write(&rsc.file, output.join("\n"));
     }
 
     println!(
