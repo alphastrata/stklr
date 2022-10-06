@@ -70,13 +70,16 @@ impl SourceTree {
                 self.named_idents.push(e.to_string())
             });
         });
-        debug!("Idents populated.");
+        //dbg!("Idents populated.");
         self
     }
     /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
-            source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
+            source_files: paths
+                .iter()
+                .map(|p| RawSourceCode::new_from_file(p))
+                .collect(),
             named_idents: Vec::new(),
         }
         .populate_idents()
@@ -86,6 +89,7 @@ impl SourceTree {
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
+        //dbg!(&path);
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
     /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
@@ -94,6 +98,7 @@ impl SourceTree {
         P: Display + AsRef<Path>,
     {
         let search_path = format!("{}/**/*.rs", dir);
+        //dbg!(&search_path);
         SourceTree {
             source_files: {
                 glob(&search_path)
@@ -199,6 +204,7 @@ impl RawSourceCode {
         raw_source_file.total_lines = raw_source_file.m.len();
         raw_source_file.named_idents.dedup();
         raw_source_file.named_idents.retain(|x| x != "");
+        //dbg!(&raw_source_file.named_idents);
         raw_source_file
     }
 
@@ -208,8 +214,8 @@ impl RawSourceCode {
         self.m
             .iter()
             .filter(|(_, raw_line)| raw_line.should_be_modified(idents))
-            .map(|(_, f)| f.clone().process_changes(idents))
-            .map(|rpl| rpl.into())
+            .map(|(_, f)| -> RawLine { f.to_owned().process_changes(idents) })
+            .map(|rpl| -> AdjustedLine { rpl.into() })
             .collect::<Vec<AdjustedLine>>()
     }
 }
@@ -217,17 +223,18 @@ impl RawSourceCode {
 impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
+    #[inline(always)]
     fn should_be_modified(&self, idents: &[String]) -> bool {
         // NOTE: this isn't as bad as you'd initially think, you're out at the first branch if it's
         // not a docstring, or, out at the first 'hit'.
         if matches!(self.flavour, Flavour::Docstring) {
             for i in idents {
-                if self.contents.contains(i) && !self.contents.contains(&format!("`{}`", i))
+                if self.contents.contains(i)
                     || self.contents.contains(&format!("{}s", i))
                     || self.contents.contains(&format!("{}.", i))
                     || self.contents.contains(&format!("{}'s", i)) && self.contents.contains("///")
                 {
-                    debug!("{i} will be modified.");
+                    //dbg!(&i);
                     return true;
                 }
             }
@@ -243,7 +250,6 @@ impl RawLine {
                 .map(|sp| {
                     if sp.contains(id) {
                         debug!("{} found in: {}", id, sp);
-                        let id = format!("{}", Colour::Green.paint(id));
                         format!(" [`{}`]", id)
                     } else {
                         debug!("No change to: {} ", sp);
@@ -309,7 +315,8 @@ mod tests {
     fn trial_on_source() {
         let t1 = std::time::Instant::now();
 
-        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+        //let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+        let st = SourceTree::new_from_cwd();
         for rsc in st.source_files.iter() {
             //rsc.make_adjustments(&rsc.named_idents);
             debug!("{}", rsc.file.display());
@@ -323,6 +330,7 @@ mod tests {
                 .into_iter()
                 .map(|n| -> String {
                     if let Some(new) = new_m.get(&n) {
+                        //dbg!(&new);
                         new.to_owned()
                     } else {
                         let new = rsc.get(&n).unwrap().contents.to_owned();
@@ -345,3 +353,4 @@ mod tests {
         );
     }
 }
+

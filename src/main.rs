@@ -47,8 +47,8 @@ fn main() {
 
     _ = match &cli.command {
         Commands::Report { path } => run_report(path),
-        Commands::Preview { path } => run(path, &cli, false, true),
-        Commands::Fix { path } => run(path, &cli, true, false),
+        Commands::Preview { path } => run(path, &cli),
+        Commands::Fix { path } => run(path, &cli),
     };
 }
 // TODO: what even is this?
@@ -57,63 +57,62 @@ fn run_report(_paths: &Option<Vec<String>>) -> Result<()> {
     Ok(())
 }
 // TODO: break this up. run_report, Preview, Fix
-fn run(paths: &Option<Vec<String>>, cli: &Cli, write_mode: bool, preview: bool) -> Result<()> {
+fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
+    let mut change_count = 0;
 
     let st = {
         if let Some(paths) = paths {
             SourceTree::new_from_paths(paths)
         } else {
+            //dbg!("CWD");
             SourceTree::new_from_cwd()
         }
     };
 
-    //NOTE: maybe par iter..?
     for rsc in st.source_files.iter() {
-        if !cli.quiet {
-            println!(
-                "\nProcessing: {}",
-                Colour::Blue.paint(rsc.file.display().to_string())
-            );
-        }
+        //dbg!(&rsc);
         let new_m = rsc
             .make_adjustments(&rsc.named_idents)
             .into_iter()
             .map(|adj| (adj.line_num, adj.contents))
-            // to ignore the fact the adjusted lines come back out-of-order
             .collect::<HashMap<usize, String>>();
+
+        dbg!(&new_m);
 
         let output = (0..rsc.total_lines)
             .into_iter()
             .map(|n| -> String {
                 if let Some(new) = new_m.get(&n) {
+                    change_count += 1;
                     if !cli.quiet {
-                        green!(new, n);
+                        green!(new.clone(), n)
                     }
                     new.to_owned()
                 } else {
                     let new = rsc.get(&n).unwrap().contents.to_owned();
                     if !cli.quiet {
-                        red!(new, n);
+                        red!(new.clone(), n);
                     }
                     new
                 }
             })
             .collect::<Vec<String>>();
 
-        // Write each file
-        if write_mode {
-            _ = std::fs::write(&rsc.file, output.join("\n"));
-        } else if !cli.quiet {
-            //TODO: pretty print
-        }
+        let tmp_path = format!(
+            "results/{}",
+            &rsc.file.display().to_string().split("/").last().unwrap()
+        );
+        _ = std::fs::write(&tmp_path, output.join("\n"));
     }
 
     println!(
-        "\n\nCOMPLETE!\n{} FILES IN: {}s",
+        "\n\nCOMPLETE!\n{} CHANGES ON {} FILES IN: {}s",
+        change_count,
         st.source_files.len(),
         t1.elapsed().as_secs_f64()
     );
 
     Ok(())
 }
+
