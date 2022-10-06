@@ -1,3 +1,5 @@
+pub mod cmd;
+pub mod feedback;
 pub mod search;
 pub mod termite;
 
@@ -12,3 +14,4 @@ where
     let file = File::open(filename)?;
     Ok(BufReader::new(file).lines())
 }
+

@@ -69,13 +69,15 @@ impl SourceTree {
                 self.named_idents.push(e.to_string())
             });
         });
-        debug!("Idents populated.");
         self
     }
     /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
-            source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
+            source_files: paths
+                .iter()
+                .map(|p| RawSourceCode::new_from_file(p))
+                .collect(),
             named_idents: Vec::new(),
         }
         .populate_idents()
@@ -188,18 +190,16 @@ impl RawSourceCode {
                         };
                         raw_line.find_docs();
                         raw_line.find_idents();
-                        if raw_line.idents.is_empty() {
-                            raw_source_file
-                                .named_idents
-                                .extend(raw_line.idents.iter().cloned())
-                        }
+                        raw_source_file
+                            .named_idents
+                            .extend(raw_line.idents.iter().cloned());
                         raw_source_file.m.insert(e, raw_line);
                     }
                 });
         }
         raw_source_file.total_lines = raw_source_file.m.len();
         raw_source_file.named_idents.dedup();
-        raw_source_file.named_idents.retain(|x| !x.is_empty());
+        raw_source_file.named_idents.retain(|x| x != "");
         raw_source_file
     }
 
@@ -209,8 +209,8 @@ impl RawSourceCode {
         self.m
             .iter()
             .filter(|(_, raw_line)| raw_line.should_be_modified(idents))
-            .map(|(_, f)| f.clone().process_changes(idents))
-            .map(|rpl| rpl.into())
+            .map(|(_, f)| -> RawLine { f.to_owned().process_changes(idents) })
+            .map(|rpl| -> AdjustedLine { rpl.into() })
             .collect::<Vec<AdjustedLine>>()
     }
 }
@@ -218,17 +218,17 @@ impl RawSourceCode {
 impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
+    #[inline(always)]
     fn should_be_modified(&self, idents: &[String]) -> bool {
         // NOTE: this isn't as bad as you'd initially think, you're out at the first branch if it's
         // not a docstring, or, out at the first 'hit'.
         if matches!(self.flavour, Flavour::Docstring) {
             for i in idents {
-                if self.contents.contains(i) && !self.contents.contains(&format!("`{}`", i))
+                if self.contents.contains(i)
                     || self.contents.contains(&format!("{}s", i))
                     || self.contents.contains(&format!("{}.", i))
                     || self.contents.contains(&format!("{}'s", i)) && self.contents.contains("///")
                 {
-                    debug!("{i} will be modified.");
                     return true;
                 }
             }
@@ -267,8 +267,9 @@ impl RawLine {
                         let cap = v.as_str().to_string();
                         //TODO: You've got more flavours, use them...
                         self.flavour = Flavour::Declare;
-                        debug!("{} added to caps.", cap);
-                        self.idents.push(cap);
+                        if cap != ""{
+                            self.idents.push(cap.clone());
+                        }
                     }
                 })*
             };
@@ -308,6 +309,7 @@ mod tests {
         let t1 = std::time::Instant::now();
 
         let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+        //let st = SourceTree::new_from_cwd();
         for rsc in st.source_files.iter() {
             //rsc.make_adjustments(&rsc.named_idents);
             debug!("{}", rsc.file.display());
@@ -321,12 +323,15 @@ mod tests {
                 .into_iter()
                 .map(|n| -> String {
                     if let Some(new) = new_m.get(&n) {
+                        //dbg!(&new);
                         new.to_owned()
                     } else {
-                        rsc.get(&n).unwrap().contents.to_owned()
+                        let new = rsc.get(&n).unwrap().contents.to_owned();
+                        new
                     }
                 })
                 .collect::<Vec<String>>();
+
             let tmp_path = format!(
                 "results/{}",
                 &rsc.file.display().to_string().split("/").last().unwrap()
@@ -341,3 +346,4 @@ mod tests {
         );
     }
 }
+

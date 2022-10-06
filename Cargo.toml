@@ -1,6 +1,6 @@
 [package]
 name = "STKLR"
-version = "0.0.1-beta"
+version = "0.0.2-beta"
 edition = "2021"
 authors = ["jer <alphastrata@gmail.com>"]
 license = "MIT"
@@ -20,6 +20,7 @@ name = "stklr"
 path = "src/main.rs"
 
 [dependencies]
+ansi_term = "0.12.1"
 anyhow = "1.0.65"
 chrono = "0.4.22"
 clap = { version = "4.0.9", features = ["derive"] }
