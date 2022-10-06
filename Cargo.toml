@@ -1,6 +1,6 @@
 [package]
 name = "STKLR"
-version = "0.0.2-beta"
+version = "0.0.3-beta"
 edition = "2021"
 authors = ["jer <alphastrata@gmail.com>"]
 license = "MIT"
