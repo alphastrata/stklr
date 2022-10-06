@@ -1,7 +1,12 @@
 #![allow(non_snake_case)]
-//
-//! STKLR
-//
+///   _____ _______ _  ___      _____  
+///  / ____|__   __| |/ / |    |  __ \
+/// | (___    | |  | ' /| |    | |__) |
+///  \___ \   | |  |  < | |    |  _  /
+///  ____) |  | |  | . \| |____| | \ \
+/// |_____/   |_|  |_|\_\______|_|  \_\
+///                                    
+///                                    
 use STKLR::cmd::cli::Cli;
 use STKLR::cmd::cli::Commands;
 use STKLR::cmd::jobs::{run, run_report};
@@ -10,7 +15,6 @@ use STKLR::termite;
 use anyhow::Result;
 
 fn main() -> Result<()> {
-    //let cli = Cli::parse();
     let cli = Cli::init();
 
     if cli.debug {
