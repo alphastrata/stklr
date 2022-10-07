@@ -1,12 +1,15 @@
 [package]
 name = "STKLR"
-version = "0.0.3-beta"
+version = "0.0.1"
 edition = "2021"
 authors = ["jer <alphastrata@gmail.com>"]
 license = "MIT"
 description = """
 STKLR: pronounced 'stickler'.
-Is a cli tool to automatically link functions, enums, structs, traits etc in rust-doc docstrings. I couldn't this when I needed it, so, here we are...
+
+Is a cli tool to automatically link functions, enums, structs, traits etc in rust-doc docstrings. 
+I couldn't find a tool like this when I needed it so... here we are.
+
 """
 homepage= "https://github.com/alphastrata/stklr.git"
 repository = "https://github.com/alphastrata/stklr.git"
