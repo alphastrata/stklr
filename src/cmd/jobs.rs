@@ -1,4 +1,5 @@
-use crate::cmd::cli::*;
+use crate::cmd::cli::Cli;
+use crate::cmd::cli::Commands;
 use crate::search::utils::SourceTree;
 use crate::{green, red};
 
@@ -49,7 +50,11 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
             })
             .collect::<Vec<String>>();
 
-        _ = std::fs::write(&rsc.file, output.join("\n"));
+        match &cli.command {
+            #[allow(unused_variables)] // This is a weird one, if you use a '_' it won't compile...
+            Commands::Fix { path } => _ = std::fs::write(&rsc.file, output.join("\n")),
+            _ => (),
+        }
     }
 
     println!(
