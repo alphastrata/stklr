@@ -13,7 +13,7 @@ lazy_static! {
 }
 
 /// A store of keywords we NEVER want to match on.
-pub const NEVERS: Vec<&str> = vec!["to", "path", "file"];
+pub const NEVERS: Vec<&str> = vec!["to", "path", "file", "from", "into", "self", "Self"];
 
 // rust std types, we only want to syntax highlight these with ``s.
 pub const ALWAYS: Vec<&str> = vec![
