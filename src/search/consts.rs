@@ -11,3 +11,11 @@ lazy_static! {
     pub static ref RUST_USE: Regex = Regex::new(r"(use\s{1}(?P<ident>\w*))").unwrap();
     pub static ref RUST_IMPORT: Regex = Regex::new(r"(::{1}(?P<ident>\w*))").unwrap();
 }
+
+/// A store of keywords we NEVER want to match on.
+pub const NEVERS: Vec<&str> = vec!["to", "path", "file"];
+
+// rust std types, we only want to syntax highlight these with ``s.
+pub const ALWAYS: Vec<&str> = vec![
+    "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "i128", "u128", "isize", "usize",
+];
