@@ -60,25 +60,22 @@ pub struct SourceTree {
     pub named_idents: Vec<String>,
 }
 
-    let alwayses = [
-        "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "i128", "u128", "isize", "usize",
-    ];
-
 impl SourceTree {
     /// Populates the idents we care about...
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
             sf.named_idents.iter().for_each(|e| {
-                if !NEVERS.contains(&&e[..]) {
+                if !NEVERS.contains(&&e[..]) && e.len() > 2 {
                     debug!("{}::{}", sf.file.display(), e);
                     self.named_idents.push(e.to_string())
                 }
             });
         });
+
         self
     }
 
-    /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
+ /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
             source_files: paths
@@ -89,14 +86,14 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Creates a [`new`] [`SourceTree`] [`from`] the [`glob`] [`search`] the current working directory the app is run
+ /// Creates a [`new`] [`SourceTree`] [`from`] the [`glob`] [`search`] the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
-    /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
+ /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
@@ -115,7 +112,7 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a [`path`] of
+ /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a [`path`] of
     /// the same name, line-by-line.
     pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
@@ -210,7 +207,7 @@ impl RawSourceCode {
         raw_source_file
     }
 
-    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] [`from`] the passed
+ /// Checks whether `self` [`should_be_modified`] and if so, [`process`] [`from`] the passed
     /// `idents` is called.
     pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
@@ -242,7 +239,7 @@ impl RawLine {
         }
         false
     }
-    /// Actually process the modifications to a [`RawLine`] contents_modified
+ /// Actually process the modifications to a [`RawLine`] contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             let split_n_proc = &self
@@ -289,8 +286,8 @@ impl RawLine {
             RUST_ENUM,
             RUST_STRUCT,
             RUST_TRAIT,
-            RUST_USE,
-            RUST_IMPORT
+            //RUST_IMPORT,
+            RUST_USE
         );
     }
 

@@ -67,7 +67,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
-/// pretty-prints a report about code stats:
+ /// pretty-prints [`a`] [`report`] [`a`] code [`a`]
 pub fn report(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     todo!()
 }
