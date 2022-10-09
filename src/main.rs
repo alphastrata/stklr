@@ -13,6 +13,7 @@ use STKLR::cmd::jobs::{run, run_report};
 use STKLR::termite;
 
 use anyhow::Result;
+use std::process::Command;
 
 fn main() -> Result<()> {
     let cli = Cli::init();

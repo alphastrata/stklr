@@ -6,23 +6,26 @@ use crate::{green, red};
 use ansi_term::Colour;
 use anyhow::Result;
 use std::collections::HashMap;
+use std::process::Command;
 
 #[allow(dead_code)]
 pub fn run_report(_paths: &Option<Vec<String>>) -> Result<()> {
     Ok(())
+}
+
+fn setup_tree(paths: &Option<Vec<String>>) -> SourceTree {
+    if let Some(paths) = paths {
+        SourceTree::new_from_paths(paths)
+    } else {
+        SourceTree::new_from_cwd()
+    }
 }
 // TODO: break this up. run_report, Preview, Fix
 pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
     let mut change_count = 0;
 
-    let st = {
-        if let Some(paths) = paths {
-            SourceTree::new_from_paths(paths)
-        } else {
-            SourceTree::new_from_cwd()
-        }
-    };
+    let st = setup_tree(paths);
 
     for rsc in st.source_files.iter() {
         let new_m = rsc
@@ -56,6 +59,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
             _ => (),
         }
     }
+    _ = cargo_fmt();
 
     println!(
         "\n\nCOMPLETE!\n{} CHANGES ON {} FILES IN: {}s",
@@ -67,7 +71,14 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
- /// pretty-prints [`a`] [`report`] [`a`] code [`a`]
+/// pretty-prints [`a`] [`report`] [`a`] code [`a`]
 pub fn report(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     todo!()
+}
+
+/// Runs cargo fmt.
+pub fn cargo_fmt() -> Result<()> {
+    let cmd = Command::new("cargo fmt").output()?;
+    dbg!("cargo fmt exit code {}", cmd.status);
+    Ok(())
 }

@@ -1,5 +1,6 @@
 use super::consts::*;
 
+use anyhow::Result;
 use core::fmt::Display;
 use glob::glob;
 use log::debug;
@@ -20,9 +21,16 @@ pub enum Linked {
     Unprocessed,
 }
 #[derive(Default, Debug, Clone, Hash)]
+#[allow(non_camel_case_types)]
 pub enum Flavour {
-    Docstring,
-    Declare,
+    RUST_DOCS,
+    RUST_FN,
+    RUST_TY,
+    RUST_ENUM,
+    RUST_STRUCT,
+    RUST_IMPORT,
+    RUST_USE,
+    RUST_TRAIT,
     #[default]
     Tasteless,
 }
@@ -219,6 +227,44 @@ impl RawSourceCode {
     }
 }
 
+#[derive(Debug, Default)]
+struct ReportCard {
+    pub source_files: Vec<RawSourceCode>,
+    pub named_idents: Vec<String>,
+    pub num_funcs: usize,
+    pub num_pub_funcs: usize,
+
+    pub num_structs: usize,
+    pub num_pub_structs: usize,
+
+    pub num_enums: usize,
+    pub num_pub_enums: usize,
+
+    pub num_types: usize,
+    pub num_pub_types: usize,
+
+    pub num_traits: usize,
+    pub num_pub_traits: usize,
+
+    pub num_macros: usize,
+}
+
+impl ReportCard {
+    pub fn new(rls: HashMap<usize, RawLine>) -> Self {
+        let mut rc = Self::default();
+        _ = rls.drain().map(|(k, v)| v.report(&mut rc)).collect::<()>();
+
+        rc
+    }
+
+    pub fn from_source_tree(st: SourceTree) -> Self {
+        st.source_files
+            .iter()
+            .map(|rsc| rsc.iter().map(|(e, rl)| Self::new));
+        todo!()
+    }
+}
+
 impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
@@ -226,7 +272,7 @@ impl RawLine {
     fn should_be_modified(&self, idents: &[String]) -> bool {
         // NOTE: this isn't as bad as you'd initially think, you're out at the first branch if it's
         // not a docstring, or, out at the first 'hit'.
-        if matches!(self.flavour, Flavour::Docstring) {
+        if matches!(self.flavour, Flavour::RUST_DOCS) {
             for i in idents {
                 if self.contents.contains(i)
                     || self.contents.contains(&format!("{}s", i))
@@ -244,6 +290,54 @@ impl RawLine {
         }
         false
     }
+
+    #[inline]
+    fn pub_or_private(&self, rc: &mut ReportCard) -> bool {
+        self.contents.contains("pub")
+    }
+    fn report(&self, rc: &mut ReportCard) -> Result<()> {
+        match self.flavour {
+            Flavour::RUST_FN => {
+                if self.pub_or_private(rc) {
+                    rc.num_pub_funcs += 1
+                } else {
+                    rc.num_funcs += 1
+                }
+            }
+            Flavour::RUST_TY => {
+                if self.pub_or_private(rc) {
+                    rc.num_pub_types += 1
+                } else {
+                    rc.num_types += 1
+                }
+            }
+
+            Flavour::RUST_ENUM => {
+                if self.pub_or_private(rc) {
+                    rc.num_pub_enums += 1
+                } else {
+                    rc.num_enums += 1
+                }
+            }
+            Flavour::RUST_TRAIT => {
+                if self.pub_or_private(rc) {
+                    rc.num_pub_types += 1
+                } else {
+                    rc.num_traits += 1
+                }
+            }
+            Flavour::RUST_STRUCT => {
+                if self.pub_or_private(rc) {
+                    rc.num_pub_structs += 1
+                } else {
+                    rc.num_structs += 1
+                }
+            }
+            _ => (),
+        }
+
+        Ok(())
+    }
     /// Actually process the modifications to a [`RawLine`] contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
@@ -257,7 +351,7 @@ impl RawLine {
                     //     panic!()
                     // }
                     //
-                    if sp.contains(id) {
+                    if sp.contains(id) && sp.len() > 3 {
                         debug!("{} found in: {}", id, sp);
                         format!(" [`{}`]", id)
                     } else {
@@ -281,7 +375,7 @@ impl RawLine {
                     if let Some(v) = caps.name("ident") {
                         let cap = v.as_str().to_string();
                         //TODO: You've got more flavours, use them...
-                        self.flavour = Flavour::Declare;
+                        self.flavour = Flavour::$CONST;
                         if cap != ""{
                             self.idents.push(cap.clone());
                         }
@@ -296,8 +390,8 @@ impl RawLine {
             RUST_TY,
             RUST_ENUM,
             RUST_STRUCT,
-            //RUST_IMPORT,
-            //RUST_USE
+            RUST_IMPORT,
+            RUST_USE,
             RUST_TRAIT
         );
     }
@@ -309,7 +403,7 @@ impl RawLine {
         let text = self.contents.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
             if let Some(_) = caps.name("ident") {
-                self.flavour = Flavour::Docstring;
+                self.flavour = Flavour::RUST_DOCS;
             }
         }
     }
@@ -361,7 +455,6 @@ mod tests {
 
         for rsc in st.source_files.iter() {
             debug!("{}", rsc.file.display());
-            rsc.named_idents.iter().for_each(|adj| println!("{adj}"));
 
             let new_m = rsc
                 .make_adjustments(&rsc.named_idents)
