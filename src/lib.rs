@@ -1,3 +1,4 @@
+#![feature(drain_filter)]
 pub mod cmd;
 pub mod feedback;
 pub mod search;

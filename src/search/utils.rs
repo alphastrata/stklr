@@ -75,7 +75,7 @@ impl SourceTree {
         self
     }
 
- /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
+    /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
             source_files: paths
@@ -86,14 +86,14 @@ impl SourceTree {
         }
         .populate_idents()
     }
- /// Creates a [`new`] [`SourceTree`] [`from`] the [`glob`] [`search`] the current working directory the app is run
+    /// Creates a [`new`] [`SourceTree`] [`from`] the [`glob`] [`search`] the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
- /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
+    /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
@@ -112,7 +112,7 @@ impl SourceTree {
         }
         .populate_idents()
     }
- /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a [`path`] of
+    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a [`path`] of
     /// the same name, line-by-line.
     pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
@@ -207,7 +207,7 @@ impl RawSourceCode {
         raw_source_file
     }
 
- /// Checks whether `self` [`should_be_modified`] and if so, [`process`] [`from`] the passed
+    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] [`from`] the passed
     /// `idents` is called.
     pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
@@ -232,20 +232,31 @@ impl RawLine {
                     || self.contents.contains(&format!("{}s", i))
                     || self.contents.contains(&format!("{}.", i))
                     || self.contents.contains(&format!("{}'s", i)) && self.contents.contains("///")
+                    || self.contents.contains("//!")
                 {
+                    if NEVERS.iter().any(|n| n == i) {
+                        return false;
+                    }
+
                     return true;
                 }
             }
         }
         false
     }
- /// Actually process the modifications to a [`RawLine`] contents_modified
+    /// Actually process the modifications to a [`RawLine`] contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             let split_n_proc = &self
                 .contents
                 .split_whitespace()
                 .map(|sp| {
+                    // //
+                    // if sp == "to" {
+                    //     dbg!(&self);
+                    //     panic!()
+                    // }
+                    //
                     if sp.contains(id) {
                         debug!("{} found in: {}", id, sp);
                         format!(" [`{}`]", id)
@@ -285,9 +296,9 @@ impl RawLine {
             RUST_TY,
             RUST_ENUM,
             RUST_STRUCT,
-            RUST_TRAIT,
             //RUST_IMPORT,
-            RUST_USE
+            //RUST_USE
+            RUST_TRAIT
         );
     }
 
@@ -313,9 +324,8 @@ mod tests {
         let t1 = std::time::Instant::now();
 
         let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-        //let st = SourceTree::new_from_cwd();
+
         for rsc in st.source_files.iter() {
-            //rsc.make_adjustments(&rsc.named_idents);
             debug!("{}", rsc.file.display());
             let new_m = rsc
                 .make_adjustments(&rsc.named_idents)
@@ -344,5 +354,19 @@ mod tests {
             st.source_files.len(),
             t1.elapsed().as_secs_f64()
         );
+    }
+    #[test]
+    fn dbg_print_idents() {
+        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+
+        for rsc in st.source_files.iter() {
+            debug!("{}", rsc.file.display());
+            rsc.named_idents.iter().for_each(|adj| println!("{adj}"));
+
+            let new_m = rsc
+                .make_adjustments(&rsc.named_idents)
+                .into_iter()
+                .for_each(|adj| println!("{adj}"));
+        }
     }
 }
