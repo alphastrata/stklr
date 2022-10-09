@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use super::consts::*;
 
 use anyhow::Result;
@@ -211,7 +212,7 @@ impl RawSourceCode {
         }
         raw_source_file.total_lines = raw_source_file.m.len();
         raw_source_file.named_idents.dedup();
-        raw_source_file.named_idents.retain(|x| x != "");
+        raw_source_file.named_idents.retain(|x| !x.is_empty());
         raw_source_file
     }
 
@@ -228,7 +229,7 @@ impl RawSourceCode {
 }
 
 #[derive(Debug, Default)]
-struct ReportCard {
+pub struct ReportCard {
     pub source_files: Vec<RawSourceCode>,
     pub named_idents: Vec<String>,
     pub num_funcs: usize,
@@ -250,18 +251,34 @@ struct ReportCard {
 }
 
 impl ReportCard {
-    pub fn new(rls: HashMap<usize, RawLine>) -> Self {
-        let mut rc = Self::default();
-        _ = rls.drain().map(|(k, v)| v.report(&mut rc)).collect::<()>();
+    pub fn from_source_tree(st: SourceTree) -> Self {
+        let mut rc = ReportCard::default();
 
+        _ = st
+            .source_files
+            .iter()
+            .map(|rsc| rc.process(rsc))
+            .collect::<()>();
+
+        rc.source_files = st.source_files;
         rc
     }
 
-    pub fn from_source_tree(st: SourceTree) -> Self {
-        st.source_files
+    pub fn process(&mut self, rsc: &RawSourceCode) {
+        _ = rsc
             .iter()
-            .map(|rsc| rsc.iter().map(|(e, rl)| Self::new));
-        todo!()
+            .flat_map(|(_k, v)| v.report(self))
+            .collect::<()>();
+    }
+
+    //TODO: DRY this up...
+    pub fn pretty_print(&self) {
+        println!("REPORT:");
+        println!(" fns    : {}", self.num_funcs + self.num_pub_funcs);
+        println!(" structs: {}", self.num_structs + self.num_pub_structs);
+        println!(" enums  : {}", self.num_enums + self.num_pub_enums);
+        println!(" types  : {}", self.num_types + self.num_pub_types);
+        println!(" traits : {}", self.num_traits + self.num_pub_traits);
     }
 }
 
@@ -292,20 +309,20 @@ impl RawLine {
     }
 
     #[inline]
-    fn pub_or_private(&self, rc: &mut ReportCard) -> bool {
+    fn pub_or_private(&self) -> bool {
         self.contents.contains("pub")
     }
     fn report(&self, rc: &mut ReportCard) -> Result<()> {
         match self.flavour {
             Flavour::RUST_FN => {
-                if self.pub_or_private(rc) {
+                if self.pub_or_private() {
                     rc.num_pub_funcs += 1
                 } else {
                     rc.num_funcs += 1
                 }
             }
             Flavour::RUST_TY => {
-                if self.pub_or_private(rc) {
+                if self.pub_or_private() {
                     rc.num_pub_types += 1
                 } else {
                     rc.num_types += 1
@@ -313,21 +330,21 @@ impl RawLine {
             }
 
             Flavour::RUST_ENUM => {
-                if self.pub_or_private(rc) {
+                if self.pub_or_private() {
                     rc.num_pub_enums += 1
                 } else {
                     rc.num_enums += 1
                 }
             }
             Flavour::RUST_TRAIT => {
-                if self.pub_or_private(rc) {
+                if self.pub_or_private() {
                     rc.num_pub_types += 1
                 } else {
                     rc.num_traits += 1
                 }
             }
             Flavour::RUST_STRUCT => {
-                if self.pub_or_private(rc) {
+                if self.pub_or_private() {
                     rc.num_pub_structs += 1
                 } else {
                     rc.num_structs += 1
@@ -338,7 +355,7 @@ impl RawLine {
 
         Ok(())
     }
-    /// Actually process the modifications to a [`RawLine`] contents_modified
+    /// Actually [`process`] the modifications to a [`RawLine`] contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             let split_n_proc = &self
@@ -452,14 +469,6 @@ mod tests {
     #[test]
     fn dbg_print_idents() {
         let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-
-        for rsc in st.source_files.iter() {
-            debug!("{}", rsc.file.display());
-
-            let new_m = rsc
-                .make_adjustments(&rsc.named_idents)
-                .into_iter()
-                .for_each(|adj| println!("{adj}"));
-        }
+        let rc = ReportCard::from_source_tree(st);
     }
 }

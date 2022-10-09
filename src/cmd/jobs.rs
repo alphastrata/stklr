@@ -1,5 +1,6 @@
 use crate::cmd::cli::Cli;
 use crate::cmd::cli::Commands;
+use crate::search::utils::ReportCard;
 use crate::search::utils::SourceTree;
 use crate::{green, red};
 
@@ -8,11 +9,6 @@ use anyhow::Result;
 use std::collections::HashMap;
 use std::process::Command;
 
-#[allow(dead_code)]
-pub fn run_report(_paths: &Option<Vec<String>>) -> Result<()> {
-    Ok(())
-}
-
 fn setup_tree(paths: &Option<Vec<String>>) -> SourceTree {
     if let Some(paths) = paths {
         SourceTree::new_from_paths(paths)
@@ -20,7 +16,6 @@ fn setup_tree(paths: &Option<Vec<String>>) -> SourceTree {
         SourceTree::new_from_cwd()
     }
 }
-// TODO: break this up. run_report, Preview, Fix
 pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
     let mut change_count = 0;
@@ -40,7 +35,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
                 if let Some(new) = new_m.get(&n) {
                     change_count += 1;
                     if !cli.quiet {
-                        green!(new.clone(), n)
+                        green!(new, n)
                     }
                     new.to_owned()
                 } else {
@@ -53,10 +48,8 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
             })
             .collect::<Vec<String>>();
 
-        match &cli.command {
-            #[allow(unused_variables)] // This is a weird one, if you use a '_' it won't compile...
-            Commands::Fix { path } => _ = std::fs::write(&rsc.file, output.join("\n")),
-            _ => (),
+        if let Commands::Fix { path } = &cli.command {
+            std::fs::write(&rsc.file, output.join("\n"))?;
         }
     }
     _ = cargo_fmt();
@@ -72,11 +65,19 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
 }
 
 /// pretty-prints [`a`] [`report`] [`a`] code [`a`]
-pub fn report(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
-    todo!()
+pub fn run_report(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
+    let t1 = std::time::Instant::now();
+
+    let st = setup_tree(paths);
+    let rc = ReportCard::from_source_tree(st);
+
+    rc.pretty_print();
+
+    println!("\n\nCOMPLETED in {}s", t1.elapsed().as_secs_f64());
+    Ok(())
 }
 
-/// Runs cargo fmt.
+/// Runs [`a`] fmt.
 pub fn cargo_fmt() -> Result<()> {
     let cmd = Command::new("cargo fmt").output()?;
     dbg!("cargo fmt exit code {}", cmd.status);
