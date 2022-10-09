@@ -64,8 +64,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
-/// pretty-prints [`a`] [`report`] [`a`] code [`a`]
-pub fn run_report(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
+pub fn run_report(paths: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
 
     let st = setup_tree(paths);
@@ -77,7 +76,6 @@ pub fn run_report(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
-/// Runs [`a`] fmt.
 pub fn cargo_fmt() -> Result<()> {
     let cmd = Command::new("cargo fmt").output()?;
     dbg!("cargo fmt exit code {}", cmd.status);

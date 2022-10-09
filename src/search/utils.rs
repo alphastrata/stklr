@@ -279,6 +279,9 @@ impl ReportCard {
         println!(" enums  : {}", self.num_enums + self.num_pub_enums);
         println!(" types  : {}", self.num_types + self.num_pub_types);
         println!(" traits : {}", self.num_traits + self.num_pub_traits);
+
+        //TODO: % of things that're public.
+        println!("% public:\n");
     }
 }
 
