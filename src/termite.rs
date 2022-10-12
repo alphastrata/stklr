@@ -1,7 +1,6 @@
 #[allow(unused_imports)]
 use log::{debug, error, info, trace, warn};
 
-/// testing i8 i32, f64 new from into some mess
 pub fn setup_logger() -> Result<(), fern::InitError> {
     let termite_path = format!("termite_{}.log", chrono::Local::now().format("%Y-%m-%d"));
     fern::Dispatch::new()
@@ -10,13 +9,13 @@ pub fn setup_logger() -> Result<(), fern::InitError> {
                 "{}[{}][{}][{}] {}",
                 chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
                 record.level(),
-                record.target(), // The file that spawned this entry into the log.
-                record.line().unwrap_or(0), // The line number in said file.
-                message // The message a developer has defined within the info!/error!/warn! macro.
+                record.target(),
+                record.line().unwrap_or(0),
+                message
             ))
         })
-        .level(log::LevelFilter::Info) // NOTE: we may want to change this in prod.
-        .chain(std::io::stdout()) // NOTE: we may wnat to remove this in prod, as we don't really
+        .level(log::LevelFilter::Warn)
+        .chain(std::io::stdout())
         .chain(fern::log_file(termite_path)?)
         .apply()?;
 

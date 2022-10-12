@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use super::consts::*;
 
 use anyhow::Result;
@@ -12,6 +11,7 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::path::{Path, PathBuf};
 
+/// Are all the available changes to a line done? not done? etc.
 #[derive(Default, Debug, Clone, Hash)]
 pub enum Linked {
     Complete,
@@ -21,6 +21,7 @@ pub enum Linked {
     #[default]
     Unprocessed,
 }
+/// A way to describe lines of code based on what they are/do etc.
 #[derive(PartialEq, Default, Debug, Clone, Hash)]
 #[allow(non_camel_case_types)]
 pub enum Flavour {
@@ -35,6 +36,7 @@ pub enum Flavour {
     #[default]
     Tasteless,
 }
+/// A line from a source file exactly as is.
 #[derive(Default, Debug, Clone, Hash)]
 pub struct RawLine {
     pub line_num: usize, //NOTE: indentionally duplicate data
@@ -45,6 +47,7 @@ pub struct RawLine {
     pub source_file: PathBuf,
 }
 
+/// A line from a source file with its contents modified by this app.
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Hash)]
 pub struct AdjustedLine {
     pub line_num: usize,
@@ -81,18 +84,15 @@ impl SourceTree {
         self
     }
 
-    /// Creates a new [`SourceTree`] `Result` a collection of `Result` to source files.
+    /// Creates a new [`SourceTree`] from a slice/vec of paths.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
-            source_files: paths
-                .iter()
-                .map(RawSourceCode::new_from_file)
-                .collect(),
+            source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
             named_idents: Vec::new(),
         }
         .populate_idents()
     }
-    /// Creates a new [`SourceTree`] `Result` the [`glob`] search the current working directory the app is run
+    /// Creates a new [`SourceTree`] `Result` the glob search the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
@@ -260,7 +260,6 @@ impl ReportCard {
 impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
-    #[inline(always)]
     fn should_be_modified(&self, idents: &[String]) -> bool {
         // NOTE: this isn't as bad as you'd initially think, you're out at the first branch if it's
         // not a docstring, or, out at the first 'hit'.
@@ -279,10 +278,12 @@ impl RawLine {
         false
     }
 
-    #[inline]
+    /// Used by the report functionality.
     fn pub_or_private(&self) -> bool {
         self.contents.contains("pub")
     }
+    /// WIP!
+    /// Produce a report on the source at hand..
     fn report(&self, rc: &mut ReportCard) -> Result<()> {
         match self.flavour {
             Flavour::RUST_FN => {
@@ -326,7 +327,7 @@ impl RawLine {
 
         Ok(())
     }
-    /// Actually [`process`] the modifications to a [`RawLine`] contents_modified
+    /// Actually [`process`] the modifications to a [`RawLine`]'s contents.
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             // TODO: how to not capture this ';' in the first place?
@@ -414,6 +415,7 @@ impl RawLine {
     }
 }
 
+// Boilerplates....
 impl Display for AdjustedLine {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}: {}", &self.line_num, &self.contents,)
@@ -475,22 +477,4 @@ mod tests {
             t1.elapsed().as_secs_f64()
         );
     }
-    #[test]
-    fn dbg_print_idents() {
-        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-        let _rc = ReportCard::from_source_tree(st);
-    }
-
-    //     #[test]
-    //     fn conquer_edges() {
-    //         let _trailing_ = r"AbsFunction_
-    // pub struct AbsFunction_<'a> {
-    //     }";
-    //
-    //         let _trailing_semicolon = r#"
-    // "/home/jer/Documents/rust/stklr/src/main.rs"
-    // Cli;
-    // 9:use STKLR::cmd::cli::Cli;
-    // "#;
-    //     }
 }
