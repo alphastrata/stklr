@@ -86,7 +86,7 @@ impl SourceTree {
         SourceTree {
             source_files: paths
                 .iter()
-                .map(|p| RawSourceCode::new_from_file(p))
+                .map(RawSourceCode::new_from_file)
                 .collect(),
             named_idents: Vec::new(),
         }
@@ -228,9 +228,7 @@ pub struct ReportCard {
 impl ReportCard {
     pub fn from_source_tree(st: SourceTree) -> Self {
         let mut rc = ReportCard::default();
-
-        _ = st
-            .source_files
+        st.source_files
             .iter()
             .map(|rsc| rc.process(rsc))
             .collect::<()>();
@@ -240,8 +238,7 @@ impl ReportCard {
     }
 
     pub fn process(&mut self, rsc: &RawSourceCode) {
-        _ = rsc
-            .iter()
+        rsc.iter()
             .flat_map(|(_k, v)| v.report(self))
             .collect::<()>();
     }

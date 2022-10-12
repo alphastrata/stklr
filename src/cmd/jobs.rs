@@ -41,7 +41,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
                 } else {
                     let new = rsc.get(&n).unwrap().contents.to_owned();
                     if !cli.quiet {
-                        red!(new.clone(), n);
+                        red!(new, n);
                     }
                     new
                 }
