@@ -7,10 +7,13 @@
 /// |_____/   |_|  |_|\_\______|_|  \_\
 ///                                    
 ///                                    
-use STKLR::cmd::cli::Cli;
-use STKLR::cmd::cli::Commands;
-use STKLR::cmd::jobs::{run, run_report};
-use STKLR::termite;
+use STKLR::{
+    cmd::{
+        cli::{Cli, Commands},
+        jobs::{run, run_report},
+    },
+    termite,
+};
 
 use anyhow::Result;
 

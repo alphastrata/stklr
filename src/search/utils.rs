@@ -4,12 +4,13 @@ use anyhow::Result;
 use core::fmt::Display;
 use glob::glob;
 use log::debug;
-use std::collections::HashMap;
-use std::fs;
-use std::hash::Hash;
-use std::ops::Deref;
-use std::ops::DerefMut;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    hash::Hash,
+    ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
+};
 
 /// Are all the available changes to a line done? not done? etc.
 #[derive(Default, Debug, Clone, Hash)]
@@ -84,6 +85,13 @@ impl SourceTree {
         self
     }
 
+    pub fn setup_tree(paths: &Option<Vec<String>>) -> SourceTree {
+        if let Some(paths) = paths {
+            SourceTree::new_from_paths(paths)
+        } else {
+            SourceTree::new_from_cwd()
+        }
+    }
     /// Creates a new [`SourceTree`] from a slice/vec of paths.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
@@ -253,7 +261,7 @@ impl ReportCard {
         println!(" traits : {}", self.num_traits + self.num_pub_traits);
 
         //TODO: % of things that're public.
-        println!("% public:\n");
+        //println!("% public:\n");
     }
 }
 

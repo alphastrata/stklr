@@ -1,26 +1,18 @@
-use crate::cmd::cli::Cli;
-use crate::cmd::cli::Commands;
-use crate::search::utils::ReportCard;
-use crate::search::utils::SourceTree;
-use crate::{green, red};
+use crate::{
+    cmd::cli::{Cli, Commands},
+    green, red,
+    search::utils::{ReportCard, SourceTree},
+};
 
 use ansi_term::Colour;
 use anyhow::Result;
-use std::collections::HashMap;
-use std::process::Command;
+use std::{collections::HashMap, process::Command};
 
-fn setup_tree(paths: &Option<Vec<String>>) -> SourceTree {
-    if let Some(paths) = paths {
-        SourceTree::new_from_paths(paths)
-    } else {
-        SourceTree::new_from_cwd()
-    }
-}
 pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
     let mut change_count = 0;
 
-    let st = setup_tree(paths);
+    let st = SourceTree::setup_tree(paths);
 
     for rsc in st.source_files.iter() {
         let new_m = rsc
@@ -67,7 +59,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
 pub fn run_report(paths: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
 
-    let st = setup_tree(paths);
+    let st = SourceTree::setup_tree(paths);
     let rc = ReportCard::from_source_tree(st);
 
     rc.pretty_print();
