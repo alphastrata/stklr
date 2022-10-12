@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use log::{debug, error, info, trace, warn};
 
+/// testing i8 i32, f64 new from into some mess
 pub fn setup_logger() -> Result<(), fern::InitError> {
     let termite_path = format!("termite_{}.log", chrono::Local::now().format("%Y-%m-%d"));
     fern::Dispatch::new()

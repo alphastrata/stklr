@@ -12,6 +12,7 @@ macro_rules! green {
         print!("{} \n", coloured);
     }};
 }
+/// the red version of green! macro
 #[macro_export]
 macro_rules! red {
     ($msg:expr, $n:expr) => {{
@@ -20,7 +21,6 @@ macro_rules! red {
         print!("{} \n", coloured);
     }};
 }
-
 
 //TODO: put all the printers you want into a single macro.
 //TODO: use macros in the Display for AdjustedLine and RawLine.

@@ -22,7 +22,7 @@ fn main() -> Result<()> {
     }
 
     _ = match &cli.command {
-        Commands::Report { path } => run_report(path),
+        Commands::Report { path } => run_report(path, &cli),
         Commands::Preview { path } => run(path, &cli),
         Commands::Fix { path } => run(path, &cli),
     };
