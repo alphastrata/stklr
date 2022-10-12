@@ -21,7 +21,7 @@ pub enum Linked {
     #[default]
     Unprocessed,
 }
-#[derive(Default, Debug, Clone, Hash)]
+#[derive(PartialEq, Default, Debug, Clone, Hash)]
 #[allow(non_camel_case_types)]
 pub enum Flavour {
     RUST_DOCS,
@@ -73,18 +73,15 @@ impl SourceTree {
     /// Populates the idents we care about...
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
-            sf.named_idents.iter().for_each(|e| {
-                if !NEVERS.contains(&&e[..]) && e.len() > 2 {
-                    debug!("{}::{}", sf.file.display(), e);
-                    self.named_idents.push(e.to_string())
-                }
-            });
+            sf.named_idents
+                .iter()
+                .for_each(|e| self.named_idents.push(e.to_string()));
         });
 
         self
     }
 
-    /// Creates a [`new`] [`SourceTree`] [`from`] a collection of [`path`] to source files.
+    /// Creates a new [`SourceTree`] from a collection of path to source files.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
             source_files: paths
@@ -95,14 +92,14 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Creates a [`new`] [`SourceTree`] [`from`] the [`glob`] [`search`] the current working directory the app is run
+    /// Creates a new [`SourceTree`] from the glob search the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
-    /// Creates a [`new`] [`SourceTree`] [`from`] a given directory.
+    /// Creates a new [`SourceTree`] from a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
@@ -121,7 +118,7 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a [`path`] of
+    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a path of
     /// the same name, line-by-line.
     pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
@@ -137,29 +134,6 @@ impl SourceTree {
         } else {
             changes.iter().for_each(|e| println!("{}", e));
         }
-    }
-}
-
-impl Display for AdjustedLine {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}: {}", &self.line_num, &self.contents,)
-    }
-}
-impl Display for RawLine {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", &self.line_num, &self.contents)
-    }
-}
-
-impl Deref for RawSourceCode {
-    type Target = HashMap<usize, RawLine>;
-    fn deref(&self) -> &Self::Target {
-        &self.m
-    }
-}
-impl DerefMut for RawSourceCode {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.m
     }
 }
 
@@ -199,6 +173,7 @@ impl RawSourceCode {
                             all_linked: Linked::Unprocessed,
                             contents: l.into(),
                             line_num: e,
+                            source_file: file.into(),
                             ..Default::default()
                         };
                         raw_line.find_docs();
@@ -216,7 +191,7 @@ impl RawSourceCode {
         raw_source_file
     }
 
-    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] [`from`] the passed
+    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] from the passed
     /// `idents` is called.
     pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
@@ -300,10 +275,6 @@ impl RawLine {
                     || self.contents.contains(&format!("{}'s", i)) && self.contents.contains("///")
                     || self.contents.contains("//!")
                 {
-                    if NEVERS.iter().any(|n| n == i) {
-                        return false;
-                    }
-
                     return true;
                 }
             }
@@ -361,23 +332,29 @@ impl RawLine {
     /// Actually [`process`] the modifications to a [`RawLine`] contents_modified
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
+            // TODO: how to not capture this ';' in the first place?
+            self.contents = self.contents.replace(";", "");
             let split_n_proc = &self
                 .contents
                 .split_whitespace()
                 .map(|sp| {
-                    // //
-                    // if sp == "to" {
-                    //     dbg!(&self);
-                    //     panic!()
-                    // }
-                    //
-                    if sp.contains(id) && sp.len() > 3 {
-                        debug!("{} found in: {}", id, sp);
+                    // Handle the always, i.e: i8 should always be `i8` etc...
+                    if ALWAYS.contains(&sp) {
+                        dbg!("ALWAYS");
+                        debug!("{} found always in: {}", id, sp);
+                        format!(" `{}`", id)
+                    }
+                    // Handle the captures.
+                    else if sp.contains(id) && sp.len() > 3 {
+                        debug!("{} found cap in: {}", id, sp);
                         format!(" [`{}`]", id)
-                    } else {
+                    }
+                    // Unchanged...
+                    else {
                         debug!("No change to: {} ", sp);
                         format!(" {}", sp)
                     }
+                    //
                 })
                 .collect::<String>();
             self.contents = split_n_proc.to_string();
@@ -396,8 +373,19 @@ impl RawLine {
                         let cap = v.as_str().to_string();
                         //TODO: You've got more flavours, use them...
                         self.flavour = Flavour::$CONST;
-                        if cap != ""{
+                        if cap != "" && !NEVERS.iter().any(|c| c == &cap) && cap.len() > 2{
                             self.idents.push(cap.clone());
+
+                            // DEBUG CAPTURES LINE-BY-LINE
+                            //eprintln!("{}", "-".repeat(40));
+                            //eprintln!("{:?}", self.source_file);
+                            //eprintln!("{}", cap);
+                            //eprintln!("{}", self);
+                            //eprintln!("{}", "-".repeat(40));
+                            //std::thread::sleep(std::time::Duration::from_millis(200));
+                            // For when we have gargage captures, this seems to be the best way to
+                            // find them, where they come from etc..
+
                         }
                     }
                 })*
@@ -429,6 +417,28 @@ impl RawLine {
     }
 }
 
+impl Display for AdjustedLine {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {}", &self.line_num, &self.contents,)
+    }
+}
+impl Display for RawLine {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}:{}", &self.line_num, &self.contents)
+    }
+}
+
+impl Deref for RawSourceCode {
+    type Target = HashMap<usize, RawLine>;
+    fn deref(&self) -> &Self::Target {
+        &self.m
+    }
+}
+impl DerefMut for RawSourceCode {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.m
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -451,7 +461,6 @@ mod tests {
                 .into_iter()
                 .map(|n| -> String {
                     if let Some(new) = new_m.get(&n) {
-                        //dbg!(&new);
                         new.to_owned()
                     } else {
                         let new = rsc.get(&n).unwrap().contents.to_owned();
@@ -472,6 +481,19 @@ mod tests {
     #[test]
     fn dbg_print_idents() {
         let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-        let rc = ReportCard::from_source_tree(st);
+        let _rc = ReportCard::from_source_tree(st);
     }
+
+    //     #[test]
+    //     fn conquer_edges() {
+    //         let _trailing_ = r"AbsFunction_
+    // pub struct AbsFunction_<'a> {
+    //     }";
+    //
+    //         let _trailing_semicolon = r#"
+    // "/home/jer/Documents/rust/stklr/src/main.rs"
+    // Cli;
+    // 9:use STKLR::cmd::cli::Cli;
+    // "#;
+    //     }
 }
