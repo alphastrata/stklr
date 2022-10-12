@@ -1,17 +1,18 @@
-#![allow(dead_code)]
 use super::consts::*;
 
 use anyhow::Result;
 use core::fmt::Display;
 use glob::glob;
 use log::debug;
-use std::collections::HashMap;
-use std::fs;
-use std::hash::Hash;
-use std::ops::Deref;
-use std::ops::DerefMut;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    hash::Hash,
+    ops::{Deref, DerefMut},
+    path::{Path, PathBuf},
+};
 
+/// Are all the available changes to a line done? not done? etc.
 #[derive(Default, Debug, Clone, Hash)]
 pub enum Linked {
     Complete,
@@ -21,6 +22,7 @@ pub enum Linked {
     #[default]
     Unprocessed,
 }
+/// A way to describe lines of code based on what they are/do etc.
 #[derive(PartialEq, Default, Debug, Clone, Hash)]
 #[allow(non_camel_case_types)]
 pub enum Flavour {
@@ -35,6 +37,7 @@ pub enum Flavour {
     #[default]
     Tasteless,
 }
+/// A line from a source file exactly as is.
 #[derive(Default, Debug, Clone, Hash)]
 pub struct RawLine {
     pub line_num: usize, //NOTE: indentionally duplicate data
@@ -45,6 +48,7 @@ pub struct RawLine {
     pub source_file: PathBuf,
 }
 
+/// A line from a source file with its contents modified by this app.
 #[derive(PartialEq, Eq, PartialOrd, Debug, Clone, Hash)]
 pub struct AdjustedLine {
     pub line_num: usize,
@@ -81,25 +85,29 @@ impl SourceTree {
         self
     }
 
-    /// Creates a new [`SourceTree`] from a collection of path to source files.
+    pub fn setup_tree(paths: &Option<Vec<String>>) -> SourceTree {
+        if let Some(paths) = paths {
+            SourceTree::new_from_paths(paths)
+        } else {
+            SourceTree::new_from_cwd()
+        }
+    }
+    /// Creates a new [`SourceTree`] from a slice/vec of paths.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
-            source_files: paths
-                .iter()
-                .map(|p| RawSourceCode::new_from_file(p))
-                .collect(),
+            source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
             named_idents: Vec::new(),
         }
         .populate_idents()
     }
-    /// Creates a new [`SourceTree`] from the glob search the current working directory the app is run
+    /// Creates a new [`SourceTree`] `Result` the glob search the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
-    /// Creates a new [`SourceTree`] from a given directory.
+    /// Creates a new [`SourceTree`] `Result` a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
@@ -118,7 +126,7 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a path of
+    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a `Result` of
     /// the same name, line-by-line.
     pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
@@ -191,7 +199,7 @@ impl RawSourceCode {
         raw_source_file
     }
 
-    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] from the passed
+    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] `Result` the passed
     /// `idents` is called.
     pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
@@ -228,9 +236,7 @@ pub struct ReportCard {
 impl ReportCard {
     pub fn from_source_tree(st: SourceTree) -> Self {
         let mut rc = ReportCard::default();
-
-        _ = st
-            .source_files
+        st.source_files
             .iter()
             .map(|rsc| rc.process(rsc))
             .collect::<()>();
@@ -240,8 +246,7 @@ impl ReportCard {
     }
 
     pub fn process(&mut self, rsc: &RawSourceCode) {
-        _ = rsc
-            .iter()
+        rsc.iter()
             .flat_map(|(_k, v)| v.report(self))
             .collect::<()>();
     }
@@ -256,14 +261,13 @@ impl ReportCard {
         println!(" traits : {}", self.num_traits + self.num_pub_traits);
 
         //TODO: % of things that're public.
-        println!("% public:\n");
+        //println!("% public:\n");
     }
 }
 
 impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
-    #[inline(always)]
     fn should_be_modified(&self, idents: &[String]) -> bool {
         // NOTE: this isn't as bad as you'd initially think, you're out at the first branch if it's
         // not a docstring, or, out at the first 'hit'.
@@ -282,10 +286,12 @@ impl RawLine {
         false
     }
 
-    #[inline]
+    /// Used by the report functionality.
     fn pub_or_private(&self) -> bool {
         self.contents.contains("pub")
     }
+    /// WIP!
+    /// Produce a report on the source at hand..
     fn report(&self, rc: &mut ReportCard) -> Result<()> {
         match self.flavour {
             Flavour::RUST_FN => {
@@ -329,7 +335,7 @@ impl RawLine {
 
         Ok(())
     }
-    /// Actually [`process`] the modifications to a [`RawLine`] contents_modified
+    /// Actually [`process`] the modifications to a [`RawLine`]'s contents.
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             // TODO: how to not capture this ';' in the first place?
@@ -417,6 +423,7 @@ impl RawLine {
     }
 }
 
+// Boilerplates....
 impl Display for AdjustedLine {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}: {}", &self.line_num, &self.contents,)
@@ -478,22 +485,4 @@ mod tests {
             t1.elapsed().as_secs_f64()
         );
     }
-    #[test]
-    fn dbg_print_idents() {
-        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
-        let _rc = ReportCard::from_source_tree(st);
-    }
-
-    //     #[test]
-    //     fn conquer_edges() {
-    //         let _trailing_ = r"AbsFunction_
-    // pub struct AbsFunction_<'a> {
-    //     }";
-    //
-    //         let _trailing_semicolon = r#"
-    // "/home/jer/Documents/rust/stklr/src/main.rs"
-    // Cli;
-    // 9:use STKLR::cmd::cli::Cli;
-    // "#;
-    //     }
 }

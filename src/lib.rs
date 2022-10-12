@@ -1,12 +1,13 @@
-#![feature(drain_filter)]
 pub mod cmd;
-pub mod feedback;
-pub mod search;
+mod feedback;
+mod search;
 pub mod termite;
 
-use std::fs::File;
-use std::io::{self, BufRead, BufReader};
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader},
+    path::Path,
+};
 
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where

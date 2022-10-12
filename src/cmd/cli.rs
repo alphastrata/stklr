@@ -1,3 +1,4 @@
+//! Main controls for the CLI.
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
@@ -20,9 +21,9 @@ pub struct Cli {
 pub enum Commands {
     /// Generates a report, containing: x, y, z.
     Report { path: Option<Vec<String>> },
-    /// [`Preview`] mode will print changes to [`std`] but not [`write`] anything to disk.
+    /// Will print changes to the terminal, but not write anything.
     Preview { path: Option<Vec<String>> },
-    /// Run [`STKLR`] and [`write`] all changes found to disk.
+    /// Run the app and write changes found.
     Fix { path: Option<Vec<String>> },
 }
 
