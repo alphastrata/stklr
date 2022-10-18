@@ -19,14 +19,14 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Generates a report, containing: x, y, z.
+    /// WIP: Generates a report, containing: x, y, z.
     Report { path: Option<Vec<String>> },
     /// Will print changes to the terminal, but not write anything.
     Preview { path: Option<Vec<String>> },
     /// Run the app and write changes found.
     Fix { path: Option<Vec<String>> },
-    /// Watches *this* directory for changes to .rs files and will re-run tests contained therein.
-    Testinate { path: Option<Vec<String>> },
+    /// WIP: Watches *this* directory for changes to .rs files and will re-run tests contained therein.
+    Test { path: Option<Vec<String>> },
 }
 
 impl Cli {
