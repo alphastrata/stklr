@@ -2,6 +2,7 @@ pub mod cmd;
 mod feedback;
 mod search;
 pub mod termite;
+pub mod testinator;
 
 use std::{
     fs::File,

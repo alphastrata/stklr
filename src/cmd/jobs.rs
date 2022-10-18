@@ -2,11 +2,25 @@ use crate::{
     cmd::cli::{Cli, Commands},
     green, red,
     search::utils::{ReportCard, SourceTree},
+    testinator::*,
 };
 
 use ansi_term::Colour;
 use anyhow::Result;
 use std::{collections::HashMap, process::Command};
+
+pub fn testinate(_path: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
+    let t1 = std::time::Instant::now();
+    let st = SourceTree::new_from_cwd();
+
+    let found_tests = grep_tests(&st).unwrap();
+
+    println!();
+    found_tests.iter().for_each(|ft| println!("{}", ft));
+
+    println!("\n\nCOMPLETED in {}s", t1.elapsed().as_secs_f64());
+    Ok(())
+}
 
 pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();

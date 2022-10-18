@@ -25,6 +25,8 @@ pub enum Commands {
     Preview { path: Option<Vec<String>> },
     /// Run the app and write changes found.
     Fix { path: Option<Vec<String>> },
+    /// Watches *this* directory for changes to .rs files and will re-run tests contained therein.
+    Testinate { path: Option<Vec<String>> },
 }
 
 impl Cli {

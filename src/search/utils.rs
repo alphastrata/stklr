@@ -236,7 +236,8 @@ pub struct ReportCard {
 impl ReportCard {
     pub fn from_source_tree(st: SourceTree) -> Self {
         let mut rc = ReportCard::default();
-        st.source_files
+        _ = st
+            .source_files
             .iter()
             .map(|rsc| rc.process(rsc))
             .collect::<()>();
@@ -246,12 +247,14 @@ impl ReportCard {
     }
 
     pub fn process(&mut self, rsc: &RawSourceCode) {
-        rsc.iter()
+        _ = rsc
+            .iter()
             .flat_map(|(_k, v)| v.report(self))
             .collect::<()>();
     }
 
     //TODO: DRY this up...
+    //TODO: colourise output.
     pub fn pretty_print(&self) {
         println!("REPORT:");
         println!(" fns    : {}", self.num_funcs + self.num_pub_funcs);
@@ -293,6 +296,7 @@ impl RawLine {
     /// WIP!
     /// Produce a report on the source at hand..
     fn report(&self, rc: &mut ReportCard) -> Result<()> {
+        //TODO: macro this
         match self.flavour {
             Flavour::RUST_FN => {
                 if self.pub_or_private() {
@@ -368,7 +372,7 @@ impl RawLine {
         self
     }
     /// Finds the things we're interested in.
-    fn find_idents(&mut self) {
+    pub fn find_idents(&mut self) {
         let text = self.contents.to_owned();
 
         // DRYness, is goodness.
