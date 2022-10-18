@@ -4,15 +4,14 @@ use clap::{Parser, Subcommand};
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
-    /// Minimum [`std`] prints.
+    /// Minimum `std` prints.
     #[arg(short, long, default_value_t = false)]
     pub quiet: bool,
 
-    /// Turns on [`the`] [`log`] it's verbose -- not reccommended.
+    /// Turns on the log it's verbose -- not reccommended.
     #[arg(short, long, default_value_t = false)]
     pub debug: bool,
 
-    /// Show a report on % of stuff that's public etc.
     #[command(subcommand)]
     pub command: Commands,
 }

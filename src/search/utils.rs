@@ -257,14 +257,32 @@ impl ReportCard {
     //TODO: colourise output.
     pub fn pretty_print(&self) {
         println!("REPORT:");
-        println!(" fns    : {}", self.num_funcs + self.num_pub_funcs);
-        println!(" structs: {}", self.num_structs + self.num_pub_structs);
-        println!(" enums  : {}", self.num_enums + self.num_pub_enums);
-        println!(" types  : {}", self.num_types + self.num_pub_types);
-        println!(" traits : {}", self.num_traits + self.num_pub_traits);
+        println!(" enums     : {}", self.num_enums + self.num_pub_enums);
+        println!(" functions : {}", self.num_funcs + self.num_pub_funcs);
+        println!(" structs   : {}", self.num_structs + self.num_pub_structs);
+        println!(" traits    : {}", self.num_traits + self.num_pub_traits);
+        println!(" types     : {}", self.num_types + self.num_pub_types);
 
-        //TODO: % of things that're public.
-        //println!("% public:\n");
+        println!("\nPUBLIC:");
+        if self.num_funcs > 1 {
+            let percentage_public = self.num_funcs / self.num_pub_funcs;
+            println!(" functions : {}", percentage_public);
+        }
+
+        if self.num_structs > 1 {
+            let percentage_public = self.num_structs / self.num_pub_structs;
+            println!(" structs   : {}", percentage_public);
+        }
+
+        if self.num_traits > 1 {
+            let percentage_public = self.num_traits / self.num_pub_traits;
+            println!(" traits    : {}", percentage_public);
+        }
+
+        if self.num_types > 1 {
+            let percentage_public = self.num_types / self.num_pub_types;
+            println!(" types     : {}", percentage_public);
+        }
     }
 }
 
