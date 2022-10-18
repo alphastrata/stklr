@@ -2,7 +2,6 @@
 //!
 
 use super::search::utils::{Flavour, RawLine, RawSourceCode, SourceTree};
-use crate::{blue, green, red};
 
 use anyhow::Result;
 use std::{fmt::Display, path::PathBuf};
@@ -23,7 +22,7 @@ impl Display for TestLocation {
         let file = ansi_term::Colour::Blue.paint(path);
         let ln = ansi_term::Colour::Yellow.paint(self.line.line_num.to_string());
         let name = ansi_term::Colour::Green.paint(self.name.clone().unwrap_or_default());
-        write!(f, "{}\n {}:{}\n", file, ln, name)
+        write!(f, "[{}]:{}: {}", file, ln, name)
     }
 }
 
@@ -74,13 +73,8 @@ impl TestLocation {
                 // *should* be in cargo fmtted rust...
                 if ln.contents.contains("}\n") {
                     // NOTE: in the unlikely event someone has #[test] in a comment, like here...
-                    match ln.flavour {
-                        Flavour::RUST_DOCS => {}
-                        _ => {
-                            self.closing_bracket = idx;
-                            return self.clone();
-                        }
-                    };
+                    self.closing_bracket = idx;
+                    return self.clone();
                 }
                 idx += 1;
             } else {
@@ -93,7 +87,7 @@ impl TestLocation {
 
 /// Given a source_file, go through it and find tests!
 pub fn grep_tests(_st: &SourceTree) -> Result<Vec<TestLocation>> {
-    Ok(SourceTree::new_from_cwd()
+    let found_tests = SourceTree::new_from_cwd()
         .source_files
         .iter()
         .flat_map(|rsc| {
@@ -101,7 +95,13 @@ pub fn grep_tests(_st: &SourceTree) -> Result<Vec<TestLocation>> {
                 .flat_map(|(_, rl)| TestLocation::new(rsc, rl))
                 .collect::<Vec<TestLocation>>()
         })
-        .collect::<Vec<TestLocation>>())
+        .collect::<Vec<TestLocation>>();
+
+    Ok(found_tests
+        .into_iter()
+        .filter(|ft| !ft.line.contents.contains("//"))
+        .filter(|ft| ft.name.is_some())
+        .collect())
 }
 
 //TODO: use the Vec<TestMap> against the Vec<RawSource> from the SourceTree.
