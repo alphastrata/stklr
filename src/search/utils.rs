@@ -199,8 +199,7 @@ impl RawSourceCode {
         raw_source_file
     }
 
-    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] `Result` the passed
-    /// `idents` is called.
+    /// Checks whether `self` [`should_be_modified`] and if so, [`process_changes`] is called.
     pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
             .iter()
@@ -264,6 +263,9 @@ impl ReportCard {
         println!(" types     : {}", self.num_types + self.num_pub_types);
 
         println!("\nPUBLIC:");
+        //TODO: this is awful!
+        //TODO: colourise output.
+        //TODO: macro this!
         if self.num_funcs > 1 {
             let percentage_public = self.num_funcs / self.num_pub_funcs;
             println!(" functions : {}", percentage_public);
