@@ -8,37 +8,55 @@ use crate::testinator::testinate::grep_tests;
 use crate::{green, red, show};
 
 use anyhow::Result;
+#[allow(unused_imports)]
+use log::{debug, error, info};
 use std::collections::HashMap;
 use std::iter::zip;
+use std::path::PathBuf;
 use std::process::Command;
 
 /// WIP:
 /// Looks at the current working directory, finds tests within `.rs` files then tries to run those
 /// tests, everytime the file they're contained in is modified.
-pub fn testinate(paths: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
+pub fn testinate(_cwd: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
 
-    let st = {
-        if let Some(paths) = paths {
-            SourceTree::new_from_paths(paths)
+    let mut st = SourceTree::new_from_cwd();
+    eprintln!("rebuild sourcetree");
+
+    loop {
+        let found_tests = grep_tests(&st).unwrap();
+
+        let modified: Vec<PathBuf> = st
+            .source_files
+            .iter()
+            .filter(|rsc| rsc.file_info.should_process())
+            .map(|rsc| rsc.file.clone())
+            .collect();
+
+        if modified.is_empty() {
+            eprintln!("Nothing was modified");
+            break;
         } else {
-            SourceTree::new_from_cwd()
+            st = SourceTree::new_from_cwd(); // We need newer timestamps
+            eprintln!("rebuild sourcetree");
+
+            let failures = found_tests
+                .iter()
+                .filter(|ft| modified.contains(&ft.file))
+                .flat_map(|ft| ft.name.clone())
+                .filter_map(|name| Some(test(&name)))
+                .collect::<Vec<bool>>();
+
+            let z = zip(found_tests, failures);
+
+            z.for_each(|(ft, failure)| println!("{} {}", ft, show!(failure)));
+
+            println!("\n\nCOMPLETED in {}s", t1.elapsed().as_secs_f64());
         }
-    };
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
 
-    let found_tests = grep_tests(&st).unwrap();
-
-    let failures = found_tests
-        .iter()
-        .flat_map(|ft| ft.name.clone())
-        .filter_map(|name| Some(test(&name)))
-        .collect::<Vec<bool>>();
-
-    let z = zip(found_tests, failures);
-
-    z.for_each(|(ft, failure)| println!("{} {}", ft, show!(failure)));
-
-    println!("\n\nCOMPLETED in {}s", t1.elapsed().as_secs_f64());
     Ok(())
 }
 
@@ -118,11 +136,10 @@ mod tests {
     use crate::cmd::cli::Cli;
 
     #[test]
-    #[ignore]
+    //#[ignore]
     fn testinator() {
-        _ = testinate(
-            &Some(["../rust/need-some-tests".to_string()].to_vec()),
-            &Cli::default(),
-        );
+        //let p = "/home/jer/Documents/rust/need-some-tests".to_string();
+        //_ = testinate(&Some(vec![p]), &Cli::default());
+        testinate(&None, &Cli::default()).unwrap();
     }
 }

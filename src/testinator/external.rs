@@ -5,6 +5,7 @@ use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
+use std::time::Duration;
 use std::time::SystemTime;
 
 /// Helper struct to hold info about any and all files we access.
@@ -14,6 +15,7 @@ pub struct FileInfo {
     pub ctime: Option<SystemTime>, // not supported on linux ><
     pub now: SystemTime,
     pub mtime: SystemTime,
+    pub last_checked: SystemTime,
 }
 
 impl FileInfo {
@@ -33,7 +35,25 @@ impl FileInfo {
             ctime,
             now: SystemTime::now(),
             mtime: metadata.modified()?,
+            last_checked: SystemTime::now(),
         })
+    }
+
+    pub fn refresh(self) -> Self {
+        //FIXME: will fail should a user rename/delete a file, so ...
+        Self::init(&self.file).unwrap()
+    }
+    /// Has a file been modified since we last looked at it?
+    pub fn should_process(&self) -> bool {
+        if let Ok(t) = self.mtime.duration_since(self.last_checked) {
+            if t > Duration::from_millis(10) {
+                eprintln!("SHOULD PROCESS=true {}", t.as_secs_f64());
+                return true;
+            }
+            dbg!(t);
+        }
+        dbg!("FALSE ON:", &self);
+        false
     }
 }
 
@@ -57,22 +77,14 @@ pub fn test(s: &str) -> bool {
     out.success()
 }
 
-/// Has a file been modified since we last looked at it?
-pub fn should_process(f: &mut FileInfo) -> bool {
-    if f.now > f.mtime {
-        f.mtime = f.now;
-        return true;
-    }
-    false
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::file;
 
     #[test]
-    fn ctime_of_this() {
+    #[ignore]
+    fn file_info() {
         let fi = FileInfo::init(&file!().into()).unwrap();
         dbg!(fi);
     }

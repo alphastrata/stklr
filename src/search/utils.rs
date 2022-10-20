@@ -297,15 +297,19 @@ impl ReportCard {
         self.source_files.iter().for_each(|rsc| {
             println!("FILE: {}", rsc.file.display());
             println!(
-                "mtime vs now:{:?}",
-                rsc.file_info.now.duration_since(rsc.file_info.mtime)
+                "last checked vs mtime: {:?}s",
+                rsc.file_info
+                    .last_checked
+                    .duration_since(rsc.file_info.mtime)
+                    .unwrap()
+                    .as_secs_f64()
             );
-            if let Some(ctime) = rsc.file_info.ctime {
-                println!(
-                    "mtime vs created:{:?}",
-                    rsc.file_info.mtime.duration_since(ctime)
-                );
-            }
+            // if let Some(ctime) = rsc.file_info.ctime {
+            //     println!(
+            //         "mtime vs created:{:?}",
+            //         rsc.file_info.mtime.duration_since(ctime)
+            //     );
+            // }
         })
     }
 }
