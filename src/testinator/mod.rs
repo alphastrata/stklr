@@ -1,5 +1,4 @@
 //! Utils make the world go round..
-//!
 
 use super::search::utils::{Flavour, RawLine, RawSourceCode, SourceTree};
 

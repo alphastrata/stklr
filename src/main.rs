@@ -28,7 +28,7 @@ fn main() -> Result<()> {
         Commands::Report { path } => run_report(path, &cli),
         Commands::Preview { path } => run(path, &cli),
         Commands::Fix { path } => run(path, &cli),
-        Commands::Test{ path } => testinate(path, &cli),
+        Commands::Test { path } => testinate(path, &cli),
     };
 
     Ok(())
