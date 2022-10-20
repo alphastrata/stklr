@@ -1,13 +1,19 @@
+//!
+//! everything related to handling the sorts of 'jobs'/i.e the 'work' this app does.
+//!
+use crate::cmd::external::test;
 use crate::{
     cmd::cli::{Cli, Commands},
     green, red,
     search::utils::{ReportCard, SourceTree},
+    show,
     testinator::*,
 };
-
-use ansi_term::Colour;
 use anyhow::Result;
-use std::{collections::HashMap, process::Command};
+use std::collections::HashMap;
+use std::iter::zip;
+
+use std::process::Command;
 
 pub fn testinate(_path: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
@@ -15,8 +21,15 @@ pub fn testinate(_path: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
 
     let found_tests = grep_tests(&st).unwrap();
 
-    println!();
-    found_tests.iter().for_each(|ft| println!("{}", ft));
+    let failures = found_tests
+        .iter()
+        .flat_map(|ft| ft.name.clone())
+        .filter_map(|name| Some(test(&name)))
+        .collect::<Vec<bool>>();
+
+    let z = zip(found_tests, failures);
+
+    z.for_each(|(ft, failure)| println!("{} {}", ft, show!(failure)));
 
     println!("\n\nCOMPLETED in {}s", t1.elapsed().as_secs_f64());
     Ok(())
@@ -86,4 +99,16 @@ pub fn cargo_fmt() -> Result<()> {
     let cmd = Command::new("cargo fmt").output()?;
     dbg!("cargo fmt exit code {}", cmd.status);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::cmd::cli::Cli;
+
+    #[test]
+    fn testinator() {
+        _ = testinate(&None, &Cli::default());
+    }
 }

@@ -1,5 +1,5 @@
 //! Main controls for the CLI.
-use clap::{Parser, Subcommand};
+use clap::{builder::FalseyValueParser, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -14,6 +14,16 @@ pub struct Cli {
 
     #[command(subcommand)]
     pub command: Commands,
+}
+
+impl Default for Cli {
+    fn default() -> Self {
+        Self {
+            quiet: false,
+            debug: false,
+            command: Commands::Report { path: None },
+        }
+    }
 }
 
 #[derive(Subcommand, Debug)]

@@ -30,5 +30,17 @@ macro_rules! blue {
         //print!("{} \n", coloured);
     }};
 }
+
+/// Take a true/false on a pass value for a test and glamour that sucker up`
+#[macro_export]
+macro_rules! show {
+    ($msg:expr) => {
+        match $msg {
+            true => ansi_term::Colour::Green.paint($msg.to_string()),
+            _ => ansi_term::Colour::Red.paint($msg.to_string()),
+        }
+    };
+}
+
 //TODO: put all the printers you want into a single macro.
 //TODO: use macros in the Display for AdjustedLine and RawLine.
