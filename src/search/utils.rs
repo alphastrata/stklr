@@ -1,3 +1,5 @@
+use crate::testinator::external::FileInfo;
+
 use super::consts::*;
 
 use anyhow::Result;
@@ -145,10 +147,12 @@ impl SourceTree {
     }
 }
 
+/// ~Most of the info we require/use about a file of raw rust source code.
 #[derive(Default, Debug, Clone)]
 pub struct RawSourceCode {
     pub m: HashMap<usize, RawLine>,
     pub file: PathBuf,
+    pub file_info: FileInfo,
     pub ident_locs: Vec<usize>,
     pub doc_locs: Vec<usize>,
     pub total_lines: usize,
@@ -168,6 +172,8 @@ impl RawSourceCode {
             doc_locs: Vec::new(),
             total_lines: 0,
             named_idents: Vec::new(),
+            file_info: FileInfo::init(&file.into()).unwrap(),
+                //.expect("We do not expect the OS to fail, causing this constructor to fail"),
         };
 
         if let Ok(lines) = crate::read_lines(file) {
@@ -285,6 +291,13 @@ impl ReportCard {
             let percentage_public = self.num_types / self.num_pub_types;
             println!(" types     : {}", percentage_public);
         }
+
+        println!("FILE:");
+        self.source_files.iter().for_each(|rsc| {
+            println!("created:{:?}", rsc.file_info.now);
+            println!("created:{:?}", rsc.file_info.mtime);
+            println!("created:{:?}", rsc.file_info.ctime);
+        })
     }
 }
 
@@ -473,6 +486,8 @@ impl DerefMut for RawSourceCode {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cmd::cli::Cli;
+    use crate::cmd::jobs::run_report;
 
     #[test]
     fn trial_on_source() {
@@ -502,6 +517,20 @@ mod tests {
 
             _ = std::fs::write(&rsc.file, output.join("\n"));
         }
+
+        debug!(
+            "{} FILES IN: {}s",
+            st.source_files.len(),
+            t1.elapsed().as_secs_f64()
+        );
+    }
+
+    #[test]
+    fn report_on_rustwari() {
+        let t1 = std::time::Instant::now();
+
+        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+        _ = run_report(&None, &Cli::default());
 
         debug!(
             "{} FILES IN: {}s",

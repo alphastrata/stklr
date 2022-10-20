@@ -13,7 +13,7 @@ use std::iter::zip;
 
 use std::process::Command;
 
-pub fn testinate(_path: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
+pub fn testinate(_path: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
     let st = SourceTree::new_from_cwd();
 
