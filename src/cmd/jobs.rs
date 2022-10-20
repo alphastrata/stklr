@@ -1,14 +1,12 @@
 //!
 //! everything related to handling the sorts of 'jobs'/i.e the 'work' this app does.
 //!
-use crate::cmd::external::test;
-use crate::{
-    cmd::cli::{Cli, Commands},
-    green, red,
-    search::utils::{ReportCard, SourceTree},
-    show,
-    testinator::*,
-};
+use crate::cmd::cli::{Cli, Commands};
+use crate::search::utils::{ReportCard, SourceTree};
+use crate::testinator::external::test;
+use crate::testinator::testinate::grep_tests;
+use crate::{green, red, show};
+
 use anyhow::Result;
 use std::collections::HashMap;
 use std::iter::zip;
