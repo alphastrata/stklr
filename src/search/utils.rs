@@ -1,11 +1,10 @@
+use crate::search::consts::*;
 use crate::testinator::external::FileInfo;
-
-use super::consts::*;
 
 use anyhow::Result;
 use core::fmt::Display;
 use glob::glob;
-use log::debug;
+use log::{debug, error};
 use std::{
     collections::HashMap,
     fs,
@@ -83,7 +82,6 @@ impl SourceTree {
                 .iter()
                 .for_each(|e| self.named_idents.push(e.to_string()));
         });
-
         self
     }
 
@@ -139,8 +137,11 @@ impl SourceTree {
             .collect();
 
         if write_flag {
-            fs::write(&file, output.join("\n")).unwrap(); //FIXME:
-            debug!("Write successful.")
+            if let Ok(_) = fs::write(&file, output.join("\n")) {
+                debug!("Write successful.")
+            } else {
+                error!("Write unsuccessful for:{}", file.display());
+            }
         } else {
             changes.iter().for_each(|e| println!("{}", e));
         }
@@ -173,7 +174,7 @@ impl RawSourceCode {
             total_lines: 0,
             named_idents: Vec::new(),
             file_info: FileInfo::init(&file.into()).unwrap(),
-                //.expect("We do not expect the OS to fail, causing this constructor to fail"),
+            //.expect("We do not expect the OS to fail, causing this constructor to fail"),
         };
 
         if let Ok(lines) = crate::read_lines(file) {
@@ -294,9 +295,17 @@ impl ReportCard {
 
         println!("FILE:");
         self.source_files.iter().for_each(|rsc| {
-            println!("created:{:?}", rsc.file_info.now);
-            println!("created:{:?}", rsc.file_info.mtime);
-            println!("created:{:?}", rsc.file_info.ctime);
+            println!("FILE: {}", rsc.file.display());
+            println!(
+                "mtime vs now:{:?}",
+                rsc.file_info.now.duration_since(rsc.file_info.mtime)
+            );
+            if let Some(ctime) = rsc.file_info.ctime {
+                println!(
+                    "mtime vs created:{:?}",
+                    rsc.file_info.mtime.duration_since(ctime)
+                );
+            }
         })
     }
 }
@@ -490,6 +499,7 @@ mod tests {
     use crate::cmd::jobs::run_report;
 
     #[test]
+    #[ignore]
     fn trial_on_source() {
         let t1 = std::time::Instant::now();
 

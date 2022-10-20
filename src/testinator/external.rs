@@ -1,7 +1,6 @@
 //!
 //! calls to external binaries and the filesystem for ctime/mtime etc.
 //!
-//use anyhow::Result;
 use anyhow::Result;
 use std::fs;
 use std::path::PathBuf;
@@ -53,7 +52,6 @@ pub fn test(s: &str) -> bool {
         .arg("-q")
         .arg(s)
         .status()
-        //.output()
         .expect("failed to execute process");
 
     out.success()

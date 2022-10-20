@@ -16,7 +16,6 @@ pub struct TestLocation {
 
 impl Display for TestLocation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        //.for_each(|ft| green!(ft.line.line_num, ft.name.clone().unwrap()));
         let path = self.file.file_name().unwrap().to_string_lossy();
         let file = ansi_term::Colour::Blue.paint(path);
         let ln = ansi_term::Colour::Yellow.paint(self.line.line_num.to_string());
@@ -27,6 +26,8 @@ impl Display for TestLocation {
 
 impl TestLocation {
     /// Begins the process of working out where a test is, and its scope.
+    /// The process to ascertain whether a test is at a given location is currently in 3 steps,
+    /// see: [`namify`] and [`refine`].
     pub fn new(rsc: &RawSourceCode, rl: &RawLine) -> Option<Self> {
         if rl.contents.contains("test]") {
             // I'm taking the RHS of the #[test] macro here to

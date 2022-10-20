@@ -10,12 +10,21 @@ use crate::{green, red, show};
 use anyhow::Result;
 use std::collections::HashMap;
 use std::iter::zip;
-
 use std::process::Command;
 
-pub fn testinate(_path: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
+/// WIP:
+/// Looks at the current working directory, finds tests within `.rs` files then tries to run those
+/// tests, everytime the file they're contained in is modified.
+pub fn testinate(paths: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
-    let st = SourceTree::new_from_cwd();
+
+    let st = {
+        if let Some(paths) = paths {
+            SourceTree::new_from_paths(paths)
+        } else {
+            SourceTree::new_from_cwd()
+        }
+    };
 
     let found_tests = grep_tests(&st).unwrap();
 
@@ -33,6 +42,7 @@ pub fn testinate(_path: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     Ok(())
 }
 
+/// Runs preview/fix functionality.
 pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
     let mut change_count = 0;
@@ -56,7 +66,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
                     }
                     new.to_owned()
                 } else {
-                    let new = rsc.get(&n).unwrap().contents.to_owned();
+                    let new = rsc.get(&n).unwrap().contents.to_owned(); //safe unwrap
                     if !cli.quiet {
                         red!(new, n);
                     }
@@ -81,6 +91,8 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     Ok(())
 }
 
+/// WIP:
+/// Runs the report functionality.
 pub fn run_report(paths: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
     let t1 = std::time::Instant::now();
 
@@ -106,7 +118,11 @@ mod tests {
     use crate::cmd::cli::Cli;
 
     #[test]
+    #[ignore]
     fn testinator() {
-        _ = testinate(&None, &Cli::default());
+        _ = testinate(
+            &Some(["../rust/need-some-tests".to_string()].to_vec()),
+            &Cli::default(),
+        );
     }
 }
