@@ -52,7 +52,7 @@ impl FileInfo {
             }
             dbg!(t);
         }
-        dbg!("FALSE ON:", &self);
+        dbg!(&self);
         false
     }
 }
