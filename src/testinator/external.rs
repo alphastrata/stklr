@@ -50,9 +50,7 @@ impl FileInfo {
                 eprintln!("SHOULD PROCESS=true {}", t.as_secs_f64());
                 return true;
             }
-            dbg!(t);
         }
-        dbg!(&self);
         false
     }
 }
