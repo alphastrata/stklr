@@ -1,5 +1,5 @@
 //! Main controls for the CLI.
-use clap::{builder::FalseyValueParser, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]

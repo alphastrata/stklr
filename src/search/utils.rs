@@ -75,7 +75,7 @@ pub struct SourceTree {
 }
 
 impl SourceTree {
-    /// Populates the idents we care about...
+    /// Populates the idents we care [`about`]
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
             sf.named_idents
@@ -92,7 +92,7 @@ impl SourceTree {
             SourceTree::new_from_cwd()
         }
     }
-    /// Creates a new [`SourceTree`] from a slice/vec of paths.
+    /// Creates a new [`SourceTree`] `FileInfo` a slice/vec of paths.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
             source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
@@ -100,7 +100,7 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Creates a new [`SourceTree`] `Result` the glob search the current working directory the app is run
+    /// Creates a new [`SourceTree`] `Result` the [`glob`] search the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
@@ -206,7 +206,7 @@ impl RawSourceCode {
         raw_source_file
     }
 
-    /// Checks whether `self` [`should_be_modified`] and if so, [`process_changes`] is called.
+    /// Checks whether `self` [`should_be_modified`] and if so, [`process`] is called.
     pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
         self.m
             .iter()
@@ -335,12 +335,12 @@ impl RawLine {
         false
     }
 
-    /// Used by the report functionality.
+    /// Used by the [`report`] functionality.
     fn pub_or_private(&self) -> bool {
         self.contents.contains("pub")
     }
     /// WIP!
-    /// Produce a report on the source at hand..
+    /// Produce a [`report`] on the source at hand..
     fn report(&self, rc: &mut ReportCard) -> Result<()> {
         //TODO: macro this
         match self.flavour {
@@ -385,7 +385,7 @@ impl RawLine {
 
         Ok(())
     }
-    /// Actually [`process`] the modifications to a [`RawLine`]'s contents.
+    /// Actually [`process`] the modifications to a [`RawLine`] contents.
     fn process_changes(mut self, idents: &[String]) -> Self {
         for id in idents {
             // TODO: how to not capture this ';' in the first place?

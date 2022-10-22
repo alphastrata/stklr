@@ -46,11 +46,11 @@ impl SourceWithScope<'_> {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     #[test]
+    #[ignore]
     fn capture_scopes() {
-        let sample = r#"impl SourceTree {
+        let _sample = r#"impl SourceTree {
     /// Populates the idents we care about...
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {

@@ -17,4 +17,3 @@ where
     let file = File::open(filename)?;
     Ok(BufReader::new(file).lines())
 }
-

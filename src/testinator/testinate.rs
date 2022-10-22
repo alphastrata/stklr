@@ -26,8 +26,8 @@ impl Display for TestLocation {
 
 impl TestLocation {
     /// Begins the process of working out where a test is, and its scope.
-    /// The process to ascertain whether a test is at a given location is currently in 3 steps,
-    /// see: [`namify`] and [`refine`].
+    /// The process to ascertain [`the`] a test is at a given location is currently in 3 steps,
+    /// see: [`namify`] and [`refine`]
     pub fn new(rsc: &RawSourceCode, rl: &RawLine) -> Option<Self> {
         if rl.contents.contains("test]") {
             // I'm taking the RHS of the #[test] macro here to

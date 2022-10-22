@@ -19,7 +19,7 @@ pub struct FileInfo {
 }
 
 impl FileInfo {
-    /// Initilise a `FileInfo` with it's ctime, mtime, and a timestamp for *now*.
+    /// Initilise a [`FileInfo`] with it's ctime, mtime, and a timestamp for *now*.
     pub fn init(p: &PathBuf) -> Result<Self> {
         let metadata = fs::metadata(p)?;
         let ctime = {
@@ -63,7 +63,7 @@ impl Default for FileInfo {
     }
 }
 
-/// Runs `cargo test $s`, `bool` on the return is false for failures.
+/// Runs `cargo [`test`] $s`, `bool` on the return is `Result` for failures.
 pub fn test(s: &str) -> bool {
     let out = Command::new("cargo")
         .arg("test")
