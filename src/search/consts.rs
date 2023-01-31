@@ -14,8 +14,8 @@ lazy_static! {
 
     // Stuff we never want linked.
     pub static ref NEVERS: Vec<&'static str> = vec!["log", "std", "core", "super","io","crate",
-        "to", "path", "for","from", "into", "that", "we", "so","of", "new", "file", "from", "into", "self", "Self"];
+        "the", "to", "path", "for", "from","into", "that", "with", "we", "so","of", "new", "file"];
 
     // Stuff we only want ` tik wrapped.
-    pub static ref ALWAYS: Vec<&'static str> = vec!["std", "core", "io", "self", "Result", "()", "Self", "String", "str", "&str", "bool", "true", "false", "float", "f8", "f16", "f32", "f64", "f128", "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "i128", "u128", "isize", "usize", "path","from","into", "n"];
+    pub static ref ALWAYS: Vec<&'static str> = vec!["self", "()", "Self", "String", "str", "&str", "bool", "true", "false", "float", "f8", "f16", "f32", "f64", "f128", "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "i128", "u128", "isize", "usize", "path", "n"];
 }

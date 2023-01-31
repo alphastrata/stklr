@@ -6,9 +6,14 @@
 /// using Preview or Verbose modes.
 #[macro_export]
 macro_rules! green {
-    ($msg:expr, $n:expr) => {{
+    ($msg:expr, $file:expr, $n:expr) => {{
+        print!(
+            "+ {}::{} ",
+            ansi_term::Colour::Blue.paint($file.to_string()),
+            ansi_term::Colour::Yellow.paint($n.to_string())
+        );
+
         let coloured = ansi_term::Colour::Green.paint($msg.to_string());
-        print!("+ {} ", ansi_term::Colour::Yellow.paint($n.to_string()));
         print!("{} \n", coloured);
     }};
 }
@@ -26,8 +31,8 @@ macro_rules! red {
 #[macro_export]
 macro_rules! blue {
     ($msg:expr) => {{
-        ansi_term::Colour::Blue.paint($msg.to_string());
-        //print!("{} \n", coloured);
+        let coloured = ansi_term::Colour::Blue.paint($msg.to_string());
+        print!("{} \n", coloured);
     }};
 }
 

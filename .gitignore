@@ -5,3 +5,6 @@ results
 releases
 stklr
 build_releases.sh
+.rustc_info.json
+debug
+target

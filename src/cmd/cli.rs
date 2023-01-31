@@ -12,6 +12,10 @@ pub struct Cli {
     #[arg(short, long, default_value_t = false)]
     pub debug: bool,
 
+    /// Hide the unchanged/unmodifed lines from `preview` output
+    #[arg(long, default_value_t = false)]
+    pub show_unmodified: bool,
+
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -21,6 +25,7 @@ impl Default for Cli {
         Self {
             quiet: false,
             debug: false,
+            show_unmodified: false,
             command: Commands::Report { path: None },
         }
     }

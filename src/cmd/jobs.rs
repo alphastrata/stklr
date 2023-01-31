@@ -3,7 +3,7 @@
 //!
 use crate::cmd::cli::{Cli, Commands};
 use crate::search::utils::{ReportCard, SourceTree};
-use crate::{green, red, show};
+use crate::{blue, green, red, show};
 
 use anyhow::Result;
 #[allow(unused_imports)]
@@ -21,6 +21,19 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
     let st = SourceTree::setup_tree(paths);
 
     for rsc in st.source_files.iter() {
+        //TODO: this is nasty -- surely there's a more elegant way.
+        let file = format!(
+            "{}",
+            rsc.file
+                .as_path()
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string()
+                .replace(".rs", "")
+        );
+
         let new_m = rsc
             .make_adjustments(&rsc.named_idents)
             .into_iter()
@@ -34,12 +47,12 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
                 if let Some(new) = new_m.get(&n) {
                     change_count += 1;
                     if !cli.quiet {
-                        green!(new, n)
+                        green!(format_args!("{new}"), file, n)
                     }
                     new.to_owned()
                 } else {
                     let new = rsc.get(&n).unwrap().contents.to_owned(); //safe unwrap
-                    if !cli.quiet {
+                    if cli.show_unmodified {
                         red!(new, n);
                     }
                     new

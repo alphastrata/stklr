@@ -74,7 +74,7 @@ pub struct SourceTree {
 }
 
 impl SourceTree {
-    /// Populates the idents we care [`about`]
+    /// Populates the idents we care about
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
             sf.named_idents
@@ -91,7 +91,7 @@ impl SourceTree {
             SourceTree::new_from_cwd()
         }
     }
-    /// Creates a new [`SourceTree`] `FileInfo` a slice/vec of paths.
+    /// Creates a new [`SourceTree`] from a slice/vec of paths.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
             source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
@@ -99,14 +99,14 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Creates a new [`SourceTree`] `Result` the [`glob`] search the current working directory the app is run
+    /// Creates a new [`SourceTree`] from the [`glob`] search the current working directory the app is run
     /// in.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
-    /// Creates a new [`SourceTree`] `Result` a given directory.
+    /// Creates a new [`SourceTree`] from a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
@@ -125,7 +125,7 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a `Result` of
+    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a from of
     /// the same name, line-by-line.
     pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
