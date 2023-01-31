@@ -242,11 +242,7 @@ pub struct ReportCard {
 impl ReportCard {
     pub fn from_source_tree(st: SourceTree) -> Self {
         let mut rc = ReportCard::default();
-        _ = st
-            .source_files
-            .iter()
-            .map(|rsc| rc.process(rsc))
-            .collect::<()>();
+        _ = st.source_files.iter().for_each(|rsc| rc.process(rsc));
 
         rc.source_files = st.source_files;
         rc

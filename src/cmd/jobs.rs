@@ -78,6 +78,7 @@ pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {
             .map(|adj| (adj.line_num, adj.contents))
             .collect::<HashMap<usize, String>>();
 
+        //TODO: too many loops.
         let output = (0..rsc.total_lines)
             .into_iter()
             .map(|n| -> String {
@@ -136,14 +137,6 @@ pub fn cargo_fmt() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::cmd::cli::Cli;
-
-    #[test]
-    //#[ignore]
-    fn testinator() {
-        //let p = "/home/jer/Documents/rust/need-some-tests".to_string();
-        //_ = testinate(&Some(vec![p]), &Cli::default());
-        testinate(&None, &Cli::default()).unwrap();
-    }
+    //TODO:
 }
