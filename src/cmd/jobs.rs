@@ -3,8 +3,6 @@
 //!
 use crate::cmd::cli::{Cli, Commands};
 use crate::search::utils::{ReportCard, SourceTree};
-use crate::testinator::external::test;
-use crate::testinator::testinate::grep_tests;
 use crate::{green, red, show};
 
 use anyhow::Result;
@@ -14,55 +12,6 @@ use std::collections::HashMap;
 use std::iter::zip;
 use std::path::PathBuf;
 use std::process::Command;
-
-fn control_loop(st: &SourceTree) -> Vec<PathBuf> {
-    loop {
-        // listen to see if any of our files have been modified
-        let modified: Vec<PathBuf> = st
-            .source_files
-            .iter()
-            .filter(|rsc| rsc.file_info.should_process())
-            .map(|rsc| rsc.file.clone())
-            .collect();
-
-        if !modified.is_empty() {
-            return modified;
-        }
-    }
-}
-/// WIP:
-/// Looks at the current working directory, finds tests within `.rs` files then tries to run those
-/// tests, everytime the file they're contained in is modified.
-pub fn testinate(_cwd: &Option<Vec<String>>, _cli: &Cli) -> Result<()> {
-    let t1 = std::time::Instant::now();
-
-    let mut st = SourceTree::new_from_cwd();
-
-    loop {
-        let found_tests = grep_tests(&st).unwrap();
-
-        st = SourceTree::new_from_cwd(); // We need newer timestamps
-        eprintln!("rebuild sourcetree");
-
-        let modified = control_loop(&st);
-
-        let failures = found_tests
-            .iter()
-            .filter(|ft| modified.contains(&ft.file))
-            .flat_map(|ft| ft.name.clone())
-            .filter_map(|name| Some(test(&name)))
-            .collect::<Vec<bool>>();
-
-        let z = zip(found_tests, failures);
-
-        z.for_each(|(ft, failure)| println!("{} {}", ft, show!(failure)));
-
-        println!("\n\nCOMPLETED in {}s", t1.elapsed().as_secs_f64());
-        std::thread::sleep(std::time::Duration::from_secs(1));
-    }
-
-    Ok(())
-}
 
 /// Runs preview/fix functionality.
 pub fn run(paths: &Option<Vec<String>>, cli: &Cli) -> Result<()> {

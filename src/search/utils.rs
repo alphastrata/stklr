@@ -1,5 +1,4 @@
 use crate::search::consts::*;
-use crate::testinator::external::FileInfo;
 
 use anyhow::Result;
 use core::fmt::Display;
@@ -153,7 +152,6 @@ impl SourceTree {
 pub struct RawSourceCode {
     pub m: HashMap<usize, RawLine>,
     pub file: PathBuf,
-    pub file_info: FileInfo,
     pub ident_locs: Vec<usize>,
     pub doc_locs: Vec<usize>,
     pub total_lines: usize,
@@ -172,9 +170,7 @@ impl RawSourceCode {
             ident_locs: Vec::new(),
             doc_locs: Vec::new(),
             total_lines: 0,
-            named_idents: Vec::new(),
-            file_info: FileInfo::init(&file.into()).unwrap(),
-            //.expect("We do not expect the OS to fail, causing this constructor to fail"),
+            named_idents: Vec::new(), //.expect("We do not expect the OS to fail, causing this constructor to fail"),
         };
 
         if let Ok(lines) = crate::read_lines(file) {
@@ -292,20 +288,6 @@ impl ReportCard {
         println!("FILE:");
         self.source_files.iter().for_each(|rsc| {
             println!("FILE: {}", rsc.file.display());
-            println!(
-                "last checked vs mtime: {:?}s",
-                rsc.file_info
-                    .last_checked
-                    .duration_since(rsc.file_info.mtime)
-                    .unwrap()
-                    .as_secs_f64()
-            );
-            // if let Some(ctime) = rsc.file_info.ctime {
-            //     println!(
-            //         "mtime vs created:{:?}",
-            //         rsc.file_info.mtime.duration_since(ctime)
-            //     );
-            // }
         })
     }
 }
