@@ -4,18 +4,18 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 
-use std::{cell::Cell, collections::HashMap};
+use std::{cell::RefCell, collections::HashMap};
 
 #[derive(Debug, Clone)]
 struct Node<'a> {
-    val: Cell<i32>,
+    val: RefCell<String>,
     adjacent: Vec<&'a Node<'a>>,
 }
 
 impl Node<'_> {
     fn add_one(node: &Node) {
-        let curval = node.val.get();
-        node.val.set(curval + 1);
+        let mut curval = node.val.borrow_mut();
+        curval.push('!');
         for adj in &node.adjacent {
             Self::add_one(&adj)
         }
@@ -24,15 +24,15 @@ impl Node<'_> {
 
 fn main() {
     let a = Node {
-        val: Cell::new(1),
+        val: RefCell::new("A".into()),
         adjacent: vec![],
     };
     let b = Node {
-        val: Cell::new(2),
+        val: RefCell::new("B".into()),
         adjacent: vec![&a],
     };
     let c = Node {
-        val: Cell::new(3),
+        val: RefCell::new("C".into()),
         adjacent: vec![&a, &b],
     };
 
