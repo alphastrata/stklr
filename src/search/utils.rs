@@ -1,5 +1,4 @@
 use crate::search::consts::*;
-use crate::testinator::external::FileInfo;
 
 use anyhow::Result;
 use core::fmt::Display;
@@ -75,7 +74,7 @@ pub struct SourceTree {
 }
 
 impl SourceTree {
-    /// Populates the idents we care [`about`]
+    /// Populates the idents
     fn populate_idents(mut self) -> Self {
         self.source_files.iter().for_each(|sf| {
             sf.named_idents
@@ -92,7 +91,7 @@ impl SourceTree {
             SourceTree::new_from_cwd()
         }
     }
-    /// Creates a new [`SourceTree`] `FileInfo` a slice/vec of paths.
+    /// Creates a new [`SourceTree`] from Path.
     pub fn new_from_paths(paths: &[String]) -> Self {
         SourceTree {
             source_files: paths.iter().map(RawSourceCode::new_from_file).collect(),
@@ -100,19 +99,19 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Creates a new [`SourceTree`] `Result` the [`glob`] search the current working directory the app is run
-    /// in.
+    /// Creates a new [`SourceTree`] from cwd.
     pub fn new_from_cwd() -> Self {
         let path = std::env::current_dir().expect("Unable to ascertain current working directory, this is likely a permissions error with your OS.");
 
         Self::new_from_dir(format!("{}", path.as_path().display()))
     }
-    /// Creates a new [`SourceTree`] `Result` a given directory.
+    /// Creates a new [`SourceTree`] from a given directory.
     pub fn new_from_dir<P>(dir: P) -> Self
     where
         P: Display + AsRef<Path>,
     {
         let search_path = format!("{}/**/*.rs", dir);
+
         SourceTree {
             source_files: {
                 glob(&search_path)
@@ -126,11 +125,11 @@ impl SourceTree {
         }
         .populate_idents()
     }
-    /// Commits changes to disk, essentially writing the [`AdjustedLine`] back to a `Result` of
-    /// the same name, line-by-line.
+    /// Commits changes to disk, essentially writing the [`AdjustedLine`]
     pub fn write_changes(file: PathBuf, changes: &mut [AdjustedLine], write_flag: bool) {
         debug!("SourceTree::write_changes was called");
         changes.sort_by(|a, b| a.line_num.cmp(&b.line_num));
+
         let output: Vec<String> = changes
             .iter_mut()
             .map(|adj_line| adj_line.contents.to_owned())
@@ -151,16 +150,24 @@ impl SourceTree {
 /// ~Most of the info we require/use about a file of raw rust source code.
 #[derive(Default, Debug, Clone)]
 pub struct RawSourceCode {
+    /// Holding line-number, line-of-code pairs
     pub m: HashMap<usize, RawLine>,
+    /// The Path on disk this all comes from
     pub file: PathBuf,
-    pub file_info: FileInfo,
+    /// Information about the file, like ctime/mtime etc
+    // pub file_info: FileInfo,
+    /// line-numbers of found idents
     pub ident_locs: Vec<usize>,
+    /// line-numbers that we found /// docstrings on
     pub doc_locs: Vec<usize>,
+    /// Total number of loc in this file.
     pub total_lines: usize,
+    /// All the idents we've found in String form.
     pub named_idents: Vec<String>,
 }
 
 impl RawSourceCode {
+    /// Produce a new RawSourceCode from a file.
     pub fn new_from_file<P>(file: P) -> Self
     where
         PathBuf: From<P>,
@@ -173,8 +180,7 @@ impl RawSourceCode {
             doc_locs: Vec::new(),
             total_lines: 0,
             named_idents: Vec::new(),
-            file_info: FileInfo::init(&file.into()).unwrap(),
-            //.expect("We do not expect the OS to fail, causing this constructor to fail"),
+            // file_info: FileInfo::init(&file.into()).unwrap(),
         };
 
         if let Ok(lines) = crate::read_lines(file) {
@@ -191,11 +197,14 @@ impl RawSourceCode {
                             source_file: file.into(),
                             ..Default::default()
                         };
+
                         raw_line.find_docs();
                         raw_line.find_idents();
+
                         raw_source_file
                             .named_idents
                             .extend(raw_line.idents.iter().cloned());
+
                         raw_source_file.m.insert(e, raw_line);
                     }
                 });
@@ -207,13 +216,19 @@ impl RawSourceCode {
     }
 
     /// Checks whether `self` [`should_be_modified`] and if so, [`process`] is called.
-    pub fn make_adjustments(&self, idents: &[String]) -> Vec<AdjustedLine> {
+    pub fn make_adjustments<'a>(
+        &'a mut self,
+        idents: &'a [String],
+    ) -> impl Iterator<Item = AdjustedLine> + '_ {
         self.m
-            .iter()
+            .iter_mut()
             .filter(|(_, raw_line)| raw_line.should_be_modified(idents))
-            .map(|(_, f)| -> RawLine { f.to_owned().process_changes(idents) })
-            .map(|rpl| -> AdjustedLine { rpl.into() })
-            .collect::<Vec<AdjustedLine>>()
+            .map(|(_, f)| {
+                f.process_changes(idents);
+                f
+            })
+            .map(|f| -> RawLine { f.to_owned() })
+            .map(move |rpl| -> AdjustedLine { rpl.into() })
     }
 }
 
@@ -240,23 +255,25 @@ pub struct ReportCard {
 }
 
 impl ReportCard {
+    /// Produce a ReportCard from A SourceTree
     pub fn from_source_tree(st: SourceTree) -> Self {
         let mut rc = ReportCard::default();
-        _ = st
+        st
             .source_files
             .iter()
             .map(|rsc| rc.process(rsc))
-            .collect::<()>();
+            .collect::<()>();;
 
         rc.source_files = st.source_files;
         rc
     }
 
+    /// Process a ReportCard from the &RawSourceCode in Self
     pub fn process(&mut self, rsc: &RawSourceCode) {
-        _ = rsc
+        rsc
             .iter()
             .flat_map(|(_k, v)| v.report(self))
-            .collect::<()>();
+            .collect::<()>();;
     }
 
     //TODO: DRY this up...
@@ -293,24 +310,18 @@ impl ReportCard {
             println!(" types     : {}", percentage_public);
         }
 
-        println!("FILE:");
-        self.source_files.iter().for_each(|rsc| {
-            println!("FILE: {}", rsc.file.display());
-            println!(
-                "last checked vs mtime: {:?}s",
-                rsc.file_info
-                    .last_checked
-                    .duration_since(rsc.file_info.mtime)
-                    .unwrap()
-                    .as_secs_f64()
-            );
-            // if let Some(ctime) = rsc.file_info.ctime {
-            //     println!(
-            //         "mtime vs created:{:?}",
-            //         rsc.file_info.mtime.duration_since(ctime)
-            //     );
-            // }
-        })
+        // println!("FILE:");
+        // self.source_files.iter().for_each(|rsc| {
+        //     println!("FILE: {}", rsc.file.display());
+        //     println!(
+        //         "last checked vs mtime: {:?}s",
+        //         rsc.file_info
+        //             .last_checked
+        //             .duration_since(rsc.file_info.mtime)
+        //             .unwrap()
+        //             .as_secs_f64()
+        //     );
+        // })
     }
 }
 
@@ -318,8 +329,6 @@ impl RawLine {
     /// Will return true for a SINGLE instance of when a modification should be made, how many may
     /// really be in there is the domain of [`process`]
     fn should_be_modified(&self, idents: &[String]) -> bool {
-        // NOTE: this isn't as bad as you'd initially think, you're out at the first branch if it's
-        // not a docstring, or, out at the first 'hit'.
         if matches!(self.flavour, Flavour::RUST_DOCS) {
             for i in idents {
                 if self.contents.contains(i)
@@ -386,17 +395,14 @@ impl RawLine {
         Ok(())
     }
     /// Actually [`process`] the modifications to a [`RawLine`] contents.
-    fn process_changes(mut self, idents: &[String]) -> Self {
-        for id in idents {
-            // TODO: how to not capture this ';' in the first place?
-            self.contents = self.contents.replace(";", "");
-            let split_n_proc = &self
+    fn process_changes(&mut self, idents: &[String]) {
+        idents.iter().for_each(|id| {
+            self.contents = self.contents.replace(';', "");
+            self.contents = self
                 .contents
                 .split_whitespace()
                 .map(|sp| {
-                    // Handle the always, i.e: i8 should always be `i8` etc...
                     if ALWAYS.contains(&sp) {
-                        dbg!("ALWAYS");
                         debug!("{} found always in: {}", id, sp);
                         format!(" `{}`", id)
                     }
@@ -410,12 +416,10 @@ impl RawLine {
                         debug!("No change to: {} ", sp);
                         format!(" {}", sp)
                     }
-                    //
                 })
-                .collect::<String>();
-            self.contents = split_n_proc.to_string();
-        }
-        self
+                .collect::<String>()
+                ;
+        });
     }
     /// Finds the things we're interested in.
     pub fn find_idents(&mut self) {
@@ -431,17 +435,6 @@ impl RawLine {
                         self.flavour = Flavour::$CONST;
                         if cap != "" && !NEVERS.iter().any(|c| c == &cap) && cap.len() > 2{
                             self.idents.push(cap.clone());
-
-                            // DEBUG CAPTURES LINE-BY-LINE
-                            //eprintln!("{}", "-".repeat(40));
-                            //eprintln!("{:?}", self.source_file);
-                            //eprintln!("{}", cap);
-                            //eprintln!("{}", self);
-                            //eprintln!("{}", "-".repeat(40));
-                            //std::thread::sleep(std::time::Duration::from_millis(200));
-                            // For when we have gargage captures, this seems to be the best way to
-                            // find them, where they come from etc..
-
                         }
                     }
                 })*
@@ -466,7 +459,7 @@ impl RawLine {
     fn find_docs(&mut self) {
         let text = self.contents.to_owned();
         for caps in RUST_DOCSTRING.captures_iter(&text) {
-            if let Some(_) = caps.name("ident") {
+            if caps.name("ident").is_some() {
                 self.flavour = Flavour::RUST_DOCS;
             }
         }
@@ -507,18 +500,17 @@ mod tests {
     fn trial_on_source() {
         let t1 = std::time::Instant::now();
 
-        let st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
+        let mut st = SourceTree::new_from_dir("/media/jer/ARCHIVE/scrapers/rustwari");
 
-        for rsc in st.source_files.iter() {
+        for rsc in st.source_files.iter_mut() {
             debug!("{}", rsc.file.display());
+            let named_idents = &rsc.named_idents.clone();
             let new_m = rsc
-                .make_adjustments(&rsc.named_idents)
-                .into_iter()
+                .make_adjustments(named_idents)
                 .map(|adj| (adj.line_num, adj.contents))
                 .collect::<HashMap<usize, String>>();
 
             let output = (0..rsc.total_lines)
-                .into_iter()
                 .map(|n| -> String {
                     if let Some(new) = new_m.get(&n) {
                         new.to_owned()

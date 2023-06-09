@@ -34,8 +34,6 @@ pub enum Commands {
     Preview { path: Option<Vec<String>> },
     /// Run the app and write changes found.
     Fix { path: Option<Vec<String>> },
-    /// WIP: Watches *this* directory for changes to .rs files and will re-run tests contained therein.
-    Test { path: Option<Vec<String>> },
 }
 
 impl Cli {

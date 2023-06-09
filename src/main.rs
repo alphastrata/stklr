@@ -10,7 +10,7 @@
 use STKLR::{
     cmd::{
         cli::{Cli, Commands},
-        jobs::{run, run_report, testinate},
+        jobs::{run, run_report},
     },
     termite,
 };
@@ -28,7 +28,6 @@ fn main() -> Result<()> {
         Commands::Report { path } => run_report(path, &cli),
         Commands::Preview { path } => run(path, &cli),
         Commands::Fix { path } => run(path, &cli),
-        Commands::Test { path } => testinate(path, &cli),
     };
 
     Ok(())
